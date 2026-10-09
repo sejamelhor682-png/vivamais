@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#6d28d9">
+<title>Viva+ — Sua jornada saudável 🚀</title>
+<style>
+/* =========================================================
+   VIVA+  —  Plataforma de incentivo à saúde juvenil
+   Arquivo único (HTML + CSS + JS). 100% navegador.
+   Persistência: localStorage.
+   ========================================================= */
+
+/* ---------- Reset & variáveis de tema ---------- */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --roxo:#6d28d9; --roxo2:#8b5cf6; --ciano:#06b6d4; --ciano2:#22d3ee;
+  --grad:linear-gradient(135deg,#6d28d9 0%,#7c3aed 40%,#06b6d4 100%);
+  --grad-suave:linear-gradient(135deg,#8b5cf6,#22d3ee);
+  --fundo:#0f0a1e; --card:#1a1430; --card2:#241a40;
+  --txt:#f5f3ff; --txt2:#a89fc9; --borda:#2e2550;
+  --ok:#22c55e; --alerta:#f59e0b; --erro:#ef4444; --fogo:#fb923c;
+  --sombra:0 10px 30px rgba(0,0,0,.35);
+  --raio:22px;
+}
+/* ---------- Base ---------- */
+html,body{height:100%;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  background:var(--fundo); color:var(--txt);
+  overflow-x:hidden; line-height:1.45;
+}
+/* container mobile-first, centralizado em telas grandes */
+#app{max-width:480px; margin:0 auto; min-height:100vh; position:relative; background:var(--fundo);}
+button{font-family:inherit;cursor:pointer;border:none;outline:none;color:inherit;}
+input,select{font-family:inherit;font-size:16px;}
+.oculto{display:none !important;}
+
+/* ---------- Tipografia utilitária ---------- */
+.titulo{font-size:26px;font-weight:800;letter-spacing:-.5px;}
+.subtitulo{font-size:15px;color:var(--txt2);}
+.secao-tit{font-size:18px;font-weight:800;margin:4px 0 12px;}
+.mini{font-size:12px;color:var(--txt2);}
+
+/* ---------- Botões ---------- */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:16px;border-radius:16px;font-size:16px;font-weight:800;
+  background:var(--grad);color:#fff;box-shadow:var(--sombra);
+  transition:transform .12s ease,opacity .2s;
+}
+.btn:active{transform:scale(.97);}
+.btn.secundario{background:var(--card2);color:var(--txt);box-shadow:none;border:1px solid var(--borda);}
+.btn:disabled{opacity:.4;}
+.btn-pequeno{width:auto;padding:10px 16px;font-size:14px;border-radius:12px;}
+
+/* ---------- Cards ---------- */
+.card{background:var(--card);border-radius:var(--raio);padding:18px;box-shadow:var(--sombra);border:1px solid var(--borda);}
+.card+.card{margin-top:14px;}
+
+/* =========================================================
+   ONBOARDING
+   ========================================================= */
+#onboarding{padding:0 0 40px;}
+.onb-topo{padding:24px 22px 10px;}
+.barra-progresso{height:8px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:16px;}
+.barra-progresso>i{display:block;height:100%;background:var(--grad-suave);width:0;transition:width .4s ease;border-radius:99px;}
+.etapa{padding:14px 22px;}
+.etapa h2{font-size:23px;font-weight:800;margin-bottom:6px;}
+.etapa p.ajuda{color:var(--txt2);font-size:14px;margin-bottom:20px;}
+.campo{margin-bottom:16px;}
+.campo label{display:block;font-size:14px;font-weight:700;margin-bottom:8px;color:var(--txt2);}
+.campo input,.campo select{
+  width:100%;padding:15px;border-radius:14px;background:var(--card2);
+  border:1.5px solid var(--borda);color:var(--txt);transition:border .2s;
+}
+.campo input:focus,.campo select:focus{border-color:var(--roxo2);}
+.linha-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* chips de seleção (sexo, objetivo, maus hábitos) */
+.chips{display:flex;flex-wrap:wrap;gap:10px;}
+.chip{
+  padding:13px 16px;border-radius:14px;background:var(--card2);
+  border:1.5px solid var(--borda);font-weight:700;font-size:14px;
+  display:flex;align-items:center;gap:8px;transition:all .18s;flex:1 1 auto;justify-content:center;
+}
+.chip.sel{background:var(--grad-suave);border-color:transparent;color:#fff;transform:scale(1.02);}
+.chip-grande{flex:1 1 100%;padding:18px;flex-direction:column;text-align:center;gap:4px;}
+.chip-grande .emj{font-size:28px;}
+.chip-grande small{font-weight:500;color:var(--txt2);font-size:12px;}
+.chip-grande.sel small{color:rgba(255,255,255,.85);}
+
+.nav-etapa{display:flex;gap:12px;margin-top:24px;}
+
+/* =========================================================
+   APP PRINCIPAL  —  barra superior, abas, telas
+   ========================================================= */
+#principal{display:none;padding-bottom:88px;}
+
+/* ---------- Barra superior (stats) ---------- */
+.topbar{
+  position:sticky;top:0;z-index:20;background:var(--grad);
+  padding:16px 18px 18px;border-radius:0 0 24px 24px;box-shadow:var(--sombra);
+}
+.topbar .ola{font-size:14px;opacity:.9;}
+.topbar .nome-user{font-size:20px;font-weight:800;}
+.stats-row{display:flex;gap:10px;margin-top:14px;}
+.stat{flex:1;background:rgba(255,255,255,.15);border-radius:16px;padding:10px;text-align:center;backdrop-filter:blur(4px);}
+.stat b{display:block;font-size:20px;font-weight:800;}
+.stat span{font-size:11px;opacity:.9;}
+
+/* ---------- Conteúdo das telas ---------- */
+.tela{display:none;padding:18px;animation:fade .3s ease;}
+.tela.ativa{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+/* ---------- Anéis de progresso circulares ---------- */
+.aneis{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.anel-card{background:var(--card);border-radius:var(--raio);padding:16px;text-align:center;border:1px solid var(--borda);box-shadow:var(--sombra);}
+.anel{position:relative;width:92px;height:92px;margin:0 auto 8px;}
+.anel svg{transform:rotate(-90deg);}
+.anel .valor{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.anel .valor .emj{font-size:22px;}
+.anel .valor .pct{font-size:12px;font-weight:800;color:var(--txt2);}
+.anel-card h4{font-size:14px;font-weight:800;}
+.anel-card .meta-txt{font-size:12px;color:var(--txt2);margin-top:2px;}
+.anel-ctrl{display:flex;gap:6px;margin-top:10px;justify-content:center;}
+.anel-ctrl button{width:34px;height:34px;border-radius:10px;background:var(--card2);border:1px solid var(--borda);font-size:18px;font-weight:800;color:var(--txt);}
+.anel-ctrl button.add{background:var(--grad-suave);border:none;color:#fff;}
+
+/* ---------- Desafio global ---------- */
+.desafio{background:linear-gradient(135deg,#f59e0b22,#ef444422);border:1.5px solid #f59e0b55;}
+.desafio .tag{display:inline-block;background:var(--alerta);color:#1a1430;font-size:11px;font-weight:800;padding:3px 10px;border-radius:99px;margin-bottom:8px;}
+
+/* ---------- Hábitos (check) ---------- */
+.habito{
+  display:flex;align-items:center;gap:14px;background:var(--card);
+  border:1px solid var(--borda);border-radius:18px;padding:14px;margin-bottom:12px;
+  transition:background .2s;
+}
+.habito.feito{background:linear-gradient(135deg,#22c55e22,#06b6d422);border-color:#22c55e66;}
+.check-btn{
+  width:52px;height:52px;flex:0 0 52px;border-radius:16px;background:var(--card2);
+  border:2px solid var(--borda);font-size:24px;display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.check-btn.on{background:var(--ok);border-color:var(--ok);transform:scale(1.05);}
+.habito .info{flex:1;min-width:0;}
+.habito .info h4{font-size:15px;font-weight:800;}
+.habito .info .sub{font-size:12px;color:var(--txt2);}
+.habito .pts{font-size:12px;font-weight:800;color:var(--ciano2);}
+.streak-badge{font-size:13px;font-weight:800;color:var(--fogo);white-space:nowrap;}
+
+/* ---------- Ranking / pódio ---------- */
+.podio{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin:10px 0 20px;}
+.podio .pos{flex:1;text-align:center;}
+.podio .ava{width:56px;height:56px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:26px;background:var(--grad-suave);border:3px solid var(--card);}
+.podio .barra{border-radius:14px 14px 0 0;background:var(--card2);padding:10px 6px;border:1px solid var(--borda);border-bottom:none;}
+.podio .p1 .ava{width:66px;height:66px;border-color:#fbbf24;box-shadow:0 0 20px #fbbf2466;}
+.podio .p1 .barra{height:92px;background:linear-gradient(180deg,#fbbf2433,var(--card2));}
+.podio .p2 .barra{height:70px;}
+.podio .p3 .barra{height:54px;}
+.podio .nome{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.podio .pt{font-size:12px;color:var(--ciano2);font-weight:800;}
+.medalha{font-size:20px;}
+
+.rank-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:var(--card);border:1px solid var(--borda);margin-bottom:8px;}
+.rank-item.eu{background:var(--grad-suave);border-color:transparent;}
+.rank-item .num{font-weight:800;width:26px;text-align:center;font-size:15px;}
+.rank-item .ava-s{width:40px;height:40px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:20px;}
+.rank-item.eu .ava-s{background:rgba(255,255,255,.25);}
+.rank-item .n{flex:1;font-weight:700;font-size:14px;}
+.rank-item .p{font-weight:800;font-size:14px;}
+.tag-rival{font-size:10px;background:var(--erro);padding:2px 7px;border-radius:99px;font-weight:800;}
+.tag-amigo{font-size:10px;background:var(--ciano);padding:2px 7px;border-radius:99px;font-weight:800;}
+
+/* ---------- Amigos ---------- */
+.codigo-box{background:var(--grad);border-radius:var(--raio);padding:20px;text-align:center;box-shadow:var(--sombra);}
+.codigo-box .cod{font-size:30px;font-weight:800;letter-spacing:3px;margin:6px 0;font-family:'Courier New',monospace;}
+.add-amigo{display:flex;gap:10px;margin:16px 0;}
+.add-amigo input{flex:1;padding:14px;border-radius:14px;background:var(--card2);border:1.5px solid var(--borda);color:var(--txt);text-transform:uppercase;}
+.amigo-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--card);border:1px solid var(--borda);margin-bottom:8px;}
+.amigo-item .x{margin-left:auto;width:34px;height:34px;border-radius:10px;background:var(--card2);color:var(--erro);font-size:18px;font-weight:800;}
+
+/* ---------- Perfil ---------- */
+.perfil-topo{text-align:center;padding:10px 0 20px;}
+.perfil-ava{width:88px;height:88px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:44px;margin:0 auto 10px;box-shadow:var(--sombra);}
+.dados-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.dado{background:var(--card2);border-radius:14px;padding:12px;}
+.dado .k{font-size:11px;color:var(--txt2);}
+.dado .v{font-size:16px;font-weight:800;margin-top:2px;}
+.badge-imc{display:inline-block;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:800;}
+
+/* ---------- Navegação inferior fixa ---------- */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;z-index:30;
+  display:flex;background:var(--card);border-top:1px solid var(--borda);
+  padding:8px 4px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,.3);
+}
+.nav-btn{flex:1;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;border-radius:12px;color:var(--txt2);transition:color .2s;}
+.nav-btn .ic{font-size:22px;transition:transform .2s;}
+.nav-btn span{font-size:10px;font-weight:700;}
+.nav-btn.ativo{color:var(--txt);}
+.nav-btn.ativo .ic{transform:translateY(-2px) scale(1.15);}
+.nav-btn.ativo span{background:var(--grad-suave);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+
+/* ---------- Toast ---------- */
+#toast-wrap{position:fixed;bottom:100px;left:0;right:0;z-index:100;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;}
+.toast{
+  background:var(--card2);color:var(--txt);padding:12px 20px;border-radius:99px;
+  font-weight:700;font-size:14px;box-shadow:var(--sombra);border:1px solid var(--borda);
+  display:flex;align-items:center;gap:8px;animation:toastIn .3s ease;max-width:90%;
+}
+.toast.ok{border-color:var(--ok);}
+.toast.pts{background:var(--grad-suave);border:none;color:#fff;}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.9);}to{opacity:1;transform:none;}}
+
+/* ---------- Resumo de metas (pós-onboarding) ---------- */
+#resumo{display:none;padding:22px;}
+.resumo-item{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--borda);border-radius:16px;padding:14px;margin-bottom:10px;}
+.resumo-item .emj{font-size:28px;}
+.resumo-item .t{flex:1;}
+.resumo-item .t h4{font-size:14px;color:var(--txt2);font-weight:700;}
+.resumo-item .t b{font-size:18px;}
+
+/* confete simples */
+.pulse{animation:pulse .5s;}
+@keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.3);}100%{transform:scale(1);}}
+</style>
+</head>
+<body>
+<div id="app">
+<!-- =========================================================
+     TELA 1: ONBOARDING (fluxo em etapas)
+     ========================================================= -->
+<section id="onboarding">
+  <div class="onb-topo">
+    <div class="titulo">Viva+ 🚀</div>
+    <div class="subtitulo">Bora criar sua jornada saudável? 💪</div>
+    <div class="barra-progresso"><i id="barraOnb"></i></div>
+    <div class="mini" id="passoTxt" style="margin-top:8px;">Passo 1 de 6</div>
+  </div>
+  <div id="etapasWrap"></div>
+</section>
+
+<!-- =========================================================
+     TELA 2: RESUMO DE METAS
+     ========================================================= -->
+<section id="resumo"></section>
+
+<!-- =========================================================
+     TELA 3: APP PRINCIPAL
+     ========================================================= -->
+<section id="principal">
+  <!-- Barra superior com stats -->
+  <header class="topbar">
+    <div class="ola">Olá, bora pra cima! 🔥</div>
+    <div class="nome-user" id="tbNome">—</div>
+    <div class="stats-row">
+      <div class="stat"><b id="tbTotal">0</b><span>Pontos totais</span></div>
+      <div class="stat"><b id="tbHoje">0</b><span>Pontos hoje</span></div>
+      <div class="stat"><b id="tbStreak">🔥0</b><span>Ofensiva</span></div>
+    </div>
+  </header>
+
+  <!-- ===== Aba INÍCIO ===== -->
+  <div class="tela ativa" id="tela-inicio">
+    <div class="card desafio" style="margin-bottom:16px;">
+      <span class="tag">🌍 DESAFIO GLOBAL DO DIA · +25 pts</span>
+      <h3 id="desafioTxt" style="font-size:17px;font-weight:800;margin:4px 0 12px;">—</h3>
+      <button class="btn" id="btnDesafio" style="padding:12px;">Completar desafio 🎯</button>
+    </div>
+    <h3 class="secao-tit">Suas metas de hoje 🎯</h3>
+    <div class="aneis" id="aneisWrap"></div>
+  </div>
+
+  <!-- ===== Aba PLANO ===== -->
+  <div class="tela" id="tela-plano">
+    <h3 class="secao-tit">🚫 Hábitos para eliminar <small class="mini">+15 pts cada</small></h3>
+    <div id="habitosEliminar"></div>
+    <h3 class="secao-tit" style="margin-top:20px;">✨ Hábitos para cultivar <small class="mini">+10 pts cada</small></h3>
+    <div id="habitosCultivar"></div>
+  </div>
+
+  <!-- ===== Aba COMPETIR ===== -->
+  <div class="tela" id="tela-competir">
+    <h3 class="secao-tit" style="text-align:center;">🏆 Ranking Mundial</h3>
+    <div class="podio" id="podioWrap"></div>
+    <div id="rankLista"></div>
+  </div>
+
+  <!-- ===== Aba AMIGOS ===== -->
+  <div class="tela" id="tela-amigos">
+    <div class="codigo-box">
+      <div class="mini" style="color:rgba(255,255,255,.85)">Seu código de amigo</div>
+      <div class="cod" id="meuCodigo">VIVA-0000</div>
+      <button class="btn secundario btn-pequeno" id="btnCopiar" style="margin:0 auto;background:rgba(255,255,255,.2);border:none;color:#fff;">📋 Copiar código</button>
+    </div>
+    <h3 class="secao-tit" style="margin-top:18px;">Adicionar amigo</h3>
+    <div class="add-amigo">
+      <input id="inpAmigo" placeholder="VIVA-XXXX" maxlength="9">
+      <button class="btn btn-pequeno" id="btnAddAmigo">Add</button>
+    </div>
+    <h3 class="secao-tit">Seus amigos 👥</h3>
+    <div id="listaAmigos"></div>
+  </div>
+
+  <!-- ===== Aba PERFIL ===== -->
+  <div class="tela" id="tela-perfil">
+    <div class="perfil-topo">
+      <div class="perfil-ava" id="perfilAva">🙂</div>
+      <div class="titulo" id="perfilNome">—</div>
+      <div class="subtitulo" id="perfilObj">—</div>
+      <div style="margin-top:8px;"><span class="badge-imc" id="perfilImc">—</span></div>
+    </div>
+    <div class="card">
+      <h3 class="secao-tit">Seus dados</h3>
+      <div class="dados-grid" id="perfilDados"></div>
+    </div>
+    <div class="card">
+      <h3 class="secao-tit">Suas metas diárias</h3>
+      <div class="dados-grid" id="perfilMetas"></div>
+    </div>
+    <button class="btn secundario" id="btnReset" style="margin-top:16px;color:var(--erro);">🔄 Recomeçar do zero</button>
+    <p class="mini" style="text-align:center;margin-top:14px;">Viva+ · feito com 💜 para sua saúde</p>
+  </div>
+
+  <!-- Navegação inferior fixa -->
+  <nav class="bottom-nav">
+    <button class="nav-btn ativo" data-tela="inicio"><span class="ic">🏠</span><span>Início</span></button>
+    <button class="nav-btn" data-tela="plano"><span class="ic">📋</span><span>Plano</span></button>
+    <button class="nav-btn" data-tela="competir"><span class="ic">🏆</span><span>Competir</span></button>
+    <button class="nav-btn" data-tela="amigos"><span class="ic">👥</span><span>Amigos</span></button>
+    <button class="nav-btn" data-tela="perfil"><span class="ic">🙂</span><span>Perfil</span></button>
+  </nav>
+</section>
+
+<!-- container de toasts -->
+<div id="toast-wrap"></div>
+</div>
+
+<!-- =========================================================
+     CONFIGURAÇÃO DO BACKEND (Firebase)  —  COLE SUAS CHAVES AQUI
+     -----------------------------------------------------------
+     • Deixe apiKey vazio ("") para rodar em MODO OFFLINE (só localStorage).
+     • Preencha com os dados do SEU projeto Firebase para ativar
+       amigos e ranking REAIS (funciona 100% no GitHub Pages).
+     • Onde pegar: console.firebase.google.com → seu projeto →
+       ⚙️ Configurações → "Seus apps" → Config do SDK.
+     ========================================================= -->
+<script>
+window.VIVA_FIREBASE = {
+  apiKey:            "AIzaSyAj-g2iRhloi_Gt7fj1INhlzLfWgUoer44",
+  authDomain:        "vivamais-6e283.firebaseapp.com",
+  projectId:         "vivamais-6e283",
+  storageBucket:     "vivamais-6e283.firebasestorage.app",
+  messagingSenderId: "782838812818",
+  appId:             "1:782838812818:web:7f69f69e42793e0b6ac6ba"
+};
+</script>
+<script>
+/* =========================================================
+   VIVA+  —  LÓGICA DA APLICAÇÃO
+   -----------------------------------------------------------
+   • Tudo roda no navegador, sem bibliotecas externas.
+   • Estado persistido em localStorage (chave 'vivaplus').
+   • Pronto para receber backend (Firebase/Supabase) depois.
+     Procure por [BACKEND] no código para ver onde integrar.
+   ========================================================= */
+'use strict';
+
+/* ---------- Chaves de armazenamento ---------- */
+const KEY = 'vivaplus_v1';
+
+/* ---------- Estado global da aplicação ---------- */
+let S = null;            // objeto de estado do usuário
+const onb = {};          // dados temporários do onboarding
+let etapaAtual = 0;      // etapa atual do onboarding (0..5)
+
+/* ---------- Camada de nuvem (backend) ----------
+   CLOUD.api  → preenchido quando o Firebase conecta (ver adaptador no fim).
+   CLOUD.ranking → ranking global em tempo real (lista de usuários reais).
+   Enquanto não houver backend configurado, o app funciona 100% offline. */
+const CLOUD = { api:null, pronto:false, ranking:[] };
+
+/* Chamado pelo adaptador Firebase assim que a nuvem conecta. */
+window.vivaAoConectar = (api)=>{
+  CLOUD.api = api; CLOUD.pronto = true;
+  if(S && S.perfil && S.perfil.nome) salvar();   // registra você no ranking
+  if(S && S.perfil) renderCompetir();
+};
+/* Chamado pelo adaptador sempre que o ranking global muda (tempo real). */
+window.vivaRanking = (arr)=>{
+  CLOUD.ranking = Array.isArray(arr) ? arr : [];
+  if(S && S.perfil && document.getElementById('principal').style.display!=='none'){
+    renderCompetir(); renderAmigos();
+  }
+};
+
+/* ---------- Utilitários ---------- */
+const $ = (s,el=document)=>el.querySelector(s);
+const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
+const hoje = ()=> new Date().toISOString().slice(0,10); // 'AAAA-MM-DD'
+
+/* Salva o estado no localStorage e sincroniza com a nuvem (se conectada).
+   [BACKEND] a sincronização remota acontece aqui (Firestore). */
+function salvar(){
+  localStorage.setItem(KEY, JSON.stringify(S));
+  // Espelha seus dados públicos no ranking global (nome, avatar, pontos).
+  if(CLOUD.api && S && S.perfil && S.perfil.nome){
+    CLOUD.api.salvarUsuario({
+      codigo: S.codigo,
+      nome:   S.perfil.nome,
+      ava:    avatarUser(),
+      pontos: S.pontosTotais,
+      obj:    S.perfil.obj
+    }).catch(()=>{}); // falha de rede não quebra o app (segue offline)
+  }
+}
+
+/* Carrega o estado do localStorage. */
+function carregar(){
+  try{ return JSON.parse(localStorage.getItem(KEY)); }catch(e){ return null; }
+}
+
+/* Mostra um toast (feedback visual rápido). */
+function toast(msg, tipo=''){
+  const w = $('#toast-wrap');
+  const t = document.createElement('div');
+  t.className = 'toast ' + tipo;
+  t.textContent = msg;
+  w.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(10px)'; }, 1800);
+  setTimeout(()=>t.remove(), 2150);
+}
+
+/* Gera um código único de amigo tipo VIVA-A1B2. */
+function gerarCodigo(){
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let r='';
+  for(let i=0;i<4;i++) r += c[Math.floor(Math.random()*c.length)];
+  return 'VIVA-'+r;
+}
+
+/* =========================================================
+   DEFINIÇÕES DE CONTEÚDO
+   ========================================================= */
+
+/* Maus hábitos oferecidos no onboarding. */
+const MAUS_HABITOS = [
+  {id:'fumar',   nome:'Fumar',          emj:'🚬'},
+  {id:'alcool',  nome:'Álcool',         emj:'🍺'},
+  {id:'vape',    nome:'Vape',           emj:'💨'},
+  {id:'refri',   nome:'Refrigerante',   emj:'🥤'},
+  {id:'doces',   nome:'Doces',          emj:'🍭'},
+  {id:'fastfood',nome:'Fast food',      emj:'🍔'},
+  {id:'tela',    nome:'Excesso de tela',emj:'📱'},
+  {id:'tarde',   nome:'Dormir tarde',   emj:'🌙'},
+];
+
+/* Hábitos saudáveis a cultivar (fixos). */
+const BONS_HABITOS = [
+  {id:'agua',   nome:'Beber bastante água', emj:'💧', sub:'Hidratação em dia'},
+  {id:'comer',  nome:'Comer bem',           emj:'🥗', sub:'Comida de verdade'},
+  {id:'treino', nome:'Exercitar-se',        emj:'🏃', sub:'Mexa o corpo'},
+  {id:'dormir', nome:'Dormir bem',          emj:'😴', sub:'7-9h de sono'},
+];
+
+/* Lista rotativa de desafios globais diários. */
+const DESAFIOS = [
+  'Beba 3L de água hoje 💧',
+  'Caminhe 10.000 passos 🚶',
+  'Fique sem telas 1h antes de dormir 📵',
+  'Coma 3 porções de frutas 🍎',
+  'Faça 30 min de exercício 💪',
+  'Durma antes das 23h 😴',
+  'Nenhum refrigerante hoje 🚫🥤',
+  'Alongue-se por 10 minutos 🧘',
+  'Suba escadas em vez do elevador 🪜',
+  'Coma uma refeição sem açúcar 🥙',
+  'Medite por 5 minutos 🧠',
+  'Tome café da manhã saudável 🥚',
+  'Faça uma pausa ativa a cada hora ⏰',
+  'Troque o doce por uma fruta 🍓',
+];
+
+/* Nomes fictícios para popular o ranking (simulação).
+   [BACKEND] no futuro, essa lista virá do servidor com usuários reais. */
+const BOTS = [
+  {nome:'Lary 🔥', ava:'🦄', base:420, rival:true},
+  {nome:'Theo', ava:'😎', base:380},
+  {nome:'Mari', ava:'🌸', base:355},
+  {nome:'Gui', ava:'🚀', base:290, rival:true},
+  {nome:'Bia', ava:'🌟', base:250},
+  {nome:'Rafa', ava:'⚡', base:210},
+  {nome:'Duda', ava:'🎯', base:170},
+  {nome:'Pedro', ava:'🏀', base:120},
+];
+
+/* =========================================================
+   ONBOARDING  —  fluxo em 6 etapas com barra de progresso
+   ========================================================= */
+
+/* Define o HTML de cada etapa. Cada função devolve a marcação. */
+const ETAPAS = [
+  // 1) Nome / apelido
+  ()=>`
+    <h2>Como podemos te chamar? 👋</h2>
+    <p class="ajuda">Pode ser seu nome ou um apelido maneiro.</p>
+    <div class="campo">
+      <label>Nome ou apelido</label>
+      <input id="f_nome" placeholder="Ex: Alex" value="${onb.nome||''}" maxlength="18">
+    </div>`,
+  // 2) Idade + sexo
+  ()=>`
+    <h2>Fala um pouco de você 🧬</h2>
+    <p class="ajuda">Usamos isso só para calcular suas metas.</p>
+    <div class="campo">
+      <label>Idade</label>
+      <input id="f_idade" type="number" min="10" max="99" placeholder="Ex: 16" value="${onb.idade||''}">
+    </div>
+    <div class="campo">
+      <label>Sexo biológico</label>
+      <div class="chips" id="f_sexo">
+        <div class="chip ${onb.sexo==='m'?'sel':''}" data-v="m">♂️ Masculino</div>
+        <div class="chip ${onb.sexo==='f'?'sel':''}" data-v="f">♀️ Feminino</div>
+      </div>
+    </div>`,
+  // 3) Peso + altura
+  ()=>`
+    <h2>Peso e altura ⚖️</h2>
+    <p class="ajuda">Pra calcular seu IMC e suas calorias.</p>
+    <div class="linha-2">
+      <div class="campo">
+        <label>Peso (kg)</label>
+        <input id="f_peso" type="number" min="25" max="250" placeholder="Ex: 60" value="${onb.peso||''}">
+      </div>
+      <div class="campo">
+        <label>Altura (cm)</label>
+        <input id="f_altura" type="number" min="100" max="230" placeholder="Ex: 170" value="${onb.altura||''}">
+      </div>
+    </div>`,
+  // 4) Sedentarismo + frequência
+  ()=>`
+    <h2>Como é sua rotina? 🏃</h2>
+    <p class="ajuda">Seja sincero — isso ajusta suas metas.</p>
+    <div class="campo">
+      <label>Nível de atividade</label>
+      <div class="chips" id="f_ativ" style="flex-direction:column;">
+        <div class="chip chip-grande ${onb.ativ==='sed'?'sel':''}" data-v="sed"><span><span class="emj">🛋️</span> Sedentário</span><small>Pouco ou nenhum exercício</small></div>
+        <div class="chip chip-grande ${onb.ativ==='leve'?'sel':''}" data-v="leve"><span><span class="emj">🚶</span> Leve</span><small>1-3 dias por semana</small></div>
+        <div class="chip chip-grande ${onb.ativ==='mod'?'sel':''}" data-v="mod"><span><span class="emj">🏃</span> Moderado</span><small>3-5 dias por semana</small></div>
+        <div class="chip chip-grande ${onb.ativ==='alto'?'sel':''}" data-v="alto"><span><span class="emj">🔥</span> Intenso</span><small>6-7 dias por semana</small></div>
+      </div>
+    </div>`,
+  // 5) Maus hábitos (múltipla escolha)
+  ()=>`
+    <h2>O que quer largar? 🚫</h2>
+    <p class="ajuda">Marque os hábitos que quer eliminar (pode pular).</p>
+    <div class="chips" id="f_maus">
+      ${MAUS_HABITOS.map(h=>`<div class="chip ${(onb.maus||[]).includes(h.id)?'sel':''}" data-v="${h.id}">${h.emj} ${h.nome}</div>`).join('')}
+    </div>`,
+  // 6) Objetivo principal
+  ()=>`
+    <h2>Qual seu objetivo? 🎯</h2>
+    <p class="ajuda">Vamos ajustar suas calorias de acordo.</p>
+    <div class="chips" id="f_obj" style="flex-direction:column;">
+      <div class="chip chip-grande ${onb.obj==='perder'?'sel':''}" data-v="perder"><span class="emj">🔥</span> Perder peso<small>Déficit calórico leve</small></div>
+      <div class="chip chip-grande ${onb.obj==='manter'?'sel':''}" data-v="manter"><span class="emj">⚖️</span> Manter-se saudável<small>Manutenção de peso</small></div>
+      <div class="chip chip-grande ${onb.obj==='ganhar'?'sel':''}" data-v="ganhar"><span class="emj">💪</span> Ganhar massa<small>Superávit calórico</small></div>
+    </div>`,
+];
+
+/* Renderiza a etapa atual do onboarding. */
+function renderEtapa(){
+  const wrap = $('#etapasWrap');
+  const total = ETAPAS.length;
+  const ehUltima = etapaAtual === total-1;
+  wrap.innerHTML = `
+    <div class="etapa">
+      ${ETAPAS[etapaAtual]()}
+      <div class="nav-etapa">
+        ${etapaAtual>0 ? '<button class="btn secundario" id="btnVoltar" style="flex:0 0 90px;">Voltar</button>' : ''}
+        <button class="btn" id="btnAvancar">${ehUltima?'Criar meu plano 🚀':'Continuar'}</button>
+      </div>
+    </div>`;
+  // barra de progresso
+  $('#barraOnb').style.width = ((etapaAtual)/(total-1)*100)+'%';
+  $('#passoTxt').textContent = `Passo ${etapaAtual+1} de ${total}`;
+  ligarEventosEtapa();
+}
+
+/* Liga os eventos de clique dos chips e botões da etapa. */
+function ligarEventosEtapa(){
+  // chips de escolha única
+  ['f_sexo','f_ativ','f_obj'].forEach(id=>{
+    const c = $('#'+id); if(!c) return;
+    $$('.chip',c).forEach(chip=>chip.onclick=()=>{
+      $$('.chip',c).forEach(x=>x.classList.remove('sel'));
+      chip.classList.add('sel');
+    });
+  });
+  // chips de múltipla escolha (maus hábitos)
+  const maus = $('#f_maus');
+  if(maus) $$('.chip',maus).forEach(chip=>chip.onclick=()=>chip.classList.toggle('sel'));
+  // navegação
+  const btnV = $('#btnVoltar'); if(btnV) btnV.onclick=()=>{ coletarEtapa(false); etapaAtual--; renderEtapa(); };
+  $('#btnAvancar').onclick = avancarEtapa;
+}
+
+/* Coleta os dados preenchidos na etapa atual (valida se exigir). */
+function coletarEtapa(validar=true){
+  switch(etapaAtual){
+    case 0:
+      onb.nome = ($('#f_nome').value||'').trim();
+      if(validar && !onb.nome){ toast('Diz teu nome aí 😉'); return false; }
+      break;
+    case 1:
+      onb.idade = parseInt($('#f_idade').value);
+      const sx = $('.chip.sel',$('#f_sexo')); onb.sexo = sx?sx.dataset.v:null;
+      if(validar && (!onb.idade || onb.idade<10 || onb.idade>99)){ toast('Idade entre 10 e 99 🙏'); return false; }
+      if(validar && !onb.sexo){ toast('Escolhe o sexo biológico'); return false; }
+      break;
+    case 2:
+      onb.peso = parseFloat($('#f_peso').value);
+      onb.altura = parseFloat($('#f_altura').value);
+      if(validar && (!onb.peso || onb.peso<25 || onb.peso>250)){ toast('Peso válido, por favor ⚖️'); return false; }
+      if(validar && (!onb.altura || onb.altura<100 || onb.altura>230)){ toast('Altura em cm, por favor 📏'); return false; }
+      break;
+    case 3:
+      const a = $('.chip.sel',$('#f_ativ')); onb.ativ = a?a.dataset.v:null;
+      if(validar && !onb.ativ){ toast('Escolhe seu nível de atividade'); return false; }
+      break;
+    case 4:
+      onb.maus = $$('.chip.sel',$('#f_maus')).map(c=>c.dataset.v); // pode ser vazio
+      break;
+    case 5:
+      const o = $('.chip.sel',$('#f_obj')); onb.obj = o?o.dataset.v:null;
+      if(validar && !onb.obj){ toast('Qual seu objetivo? 🎯'); return false; }
+      break;
+  }
+  return true;
+}
+
+/* Avança para a próxima etapa ou finaliza o onboarding. */
+function avancarEtapa(){
+  if(!coletarEtapa(true)) return;
+  if(etapaAtual < ETAPAS.length-1){
+    etapaAtual++; renderEtapa();
+  }else{
+    criarUsuario();  // fim do onboarding
+  }
+}
+
+/* =========================================================
+   CÁLCULO DE METAS PERSONALIZADAS
+   ========================================================= */
+
+/* Fatores de atividade (usados no cálculo de calorias e passos). */
+const FATOR_ATIV = { sed:1.2, leve:1.375, mod:1.55, alto:1.725 };
+
+/* Calcula todas as metas a partir dos dados do onboarding. */
+function calcularMetas(d){
+  // --- IMC e classificação ---
+  const alturaM = d.altura/100;
+  const imc = +(d.peso/(alturaM*alturaM)).toFixed(1);
+  let classe, corImc;
+  if(imc < 18.5){ classe='Abaixo do peso'; corImc='#06b6d4'; }
+  else if(imc < 25){ classe='Saudável'; corImc='#22c55e'; }
+  else if(imc < 30){ classe='Sobrepeso'; corImc='#f59e0b'; }
+  else { classe='Obesidade'; corImc='#ef4444'; }
+
+  // --- Meta de água: 35ml por kg + 350ml se treina (mod/alto) ---
+  let agua = d.peso * 35;
+  if(d.ativ==='mod' || d.ativ==='alto') agua += 350;
+  agua = Math.round(agua/50)*50; // arredonda para 50ml
+
+  // --- Calorias: fórmula Mifflin-St Jeor ---
+  // Homem: 10*peso + 6.25*altura - 5*idade + 5
+  // Mulher: 10*peso + 6.25*altura - 5*idade - 161
+  let tmb = 10*d.peso + 6.25*d.altura - 5*d.idade + (d.sexo==='m'?5:-161);
+  let calorias = tmb * (FATOR_ATIV[d.ativ]||1.2);  // gasto total estimado
+  // ajuste pelo objetivo
+  if(d.obj==='perder') calorias *= 0.85;   // déficit ~15%
+  else if(d.obj==='ganhar') calorias *= 1.12; // superávit ~12%
+  calorias = Math.round(calorias/10)*10;
+
+  // --- Passos diários (6.000 a 12.000 conforme rotina) ---
+  const passosMap = { sed:6000, leve:8000, mod:10000, alto:12000 };
+  const passos = passosMap[d.ativ] || 6000;
+
+  // --- Minutos de exercício (20 a 45 min) ---
+  const minMap = { sed:20, leve:30, mod:40, alto:45 };
+  const exercicio = minMap[d.ativ] || 20;
+
+  // --- Refeições saudáveis sugeridas por dia ---
+  const refeicoes = 3;
+
+  return { imc, classe, corImc, agua, calorias, passos, exercicio, refeicoes };
+}
+
+/* =========================================================
+   CRIAÇÃO DO USUÁRIO + TELA DE RESUMO
+   ========================================================= */
+
+/* Monta o objeto de estado inicial e exibe o resumo de metas. */
+function criarUsuario(){
+  const metas = calcularMetas(onb);
+  S = {
+    perfil: { ...onb },
+    codigo: gerarCodigo(),
+    metas,
+    pontosTotais: 0,
+    criadoEm: hoje(),
+    // progresso do dia (reiniciado a cada novo dia)
+    dia: hoje(),
+    pontosHoje: 0,
+    aneis: { agua:0, passos:0, exercicio:0, refeicoes:0 },
+    habitos: {},        // id -> {feito:bool, streak:int, ultimoDia:'AAAA-MM-DD'}
+    desafioFeito: false,
+    streak: 0,          // ofensiva geral (dias ativos seguidos)
+    ultimoDiaAtivo: null,
+    amigos: [],         // [{codigo,nome,ava,pontos}]
+  };
+  // inicializa estrutura de hábitos
+  habitosDoUsuario().forEach(h=>{ S.habitos[h.id] = {feito:false, streak:0, ultimoDia:null}; });
+  salvar();
+  mostrarResumo(metas);
+}
+
+/* Devolve a lista completa de hábitos do usuário (eliminar + cultivar). */
+function habitosDoUsuario(){
+  const eliminar = (S?S.perfil.maus:onb.maus||[]).map(id=>{
+    const h = MAUS_HABITOS.find(x=>x.id===id);
+    return { id:'elim_'+id, nome:'Sem '+h.nome.toLowerCase(), emj:h.emj, sub:'Fique longe hoje', pts:15, tipo:'elim' };
+  });
+  const cultivar = BONS_HABITOS.map(h=>({ ...h, pts:10, tipo:'bom' }));
+  return [...eliminar, ...cultivar];
+}
+
+/* Exibe a tela de resumo das metas antes de entrar no app. */
+function mostrarResumo(m){
+  $('#onboarding').style.display='none';
+  const r = $('#resumo');
+  r.style.display='block';
+  r.innerHTML = `
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:50px;">🎉</div>
+      <div class="titulo">Tudo pronto, ${S.perfil.nome}!</div>
+      <div class="subtitulo">Essas são suas metas personalizadas 👇</div>
+    </div>
+    <div class="resumo-item" style="border-color:${m.corImc}66;">
+      <div class="emj">🧍</div>
+      <div class="t"><h4>Seu IMC</h4><b>${m.imc} · <span style="color:${m.corImc}">${m.classe}</span></b></div>
+    </div>
+    <div class="resumo-item"><div class="emj">💧</div><div class="t"><h4>Água por dia</h4><b>${(m.agua/1000).toFixed(1)} L</b></div></div>
+    <div class="resumo-item"><div class="emj">🔥</div><div class="t"><h4>Calorias por dia</h4><b>${m.calorias} kcal</b></div></div>
+    <div class="resumo-item"><div class="emj">🚶</div><div class="t"><h4>Passos por dia</h4><b>${m.passos.toLocaleString('pt-BR')}</b></div></div>
+    <div class="resumo-item"><div class="emj">⏱️</div><div class="t"><h4>Exercício por dia</h4><b>${m.exercicio} min</b></div></div>
+    <button class="btn" id="btnEntrar" style="margin-top:16px;">Começar minha jornada 🚀</button>
+  `;
+  $('#btnEntrar').onclick = entrarApp;
+}
+
+/* =========================================================
+   ENTRADA NO APP + CONTROLE DE NOVO DIA
+   ========================================================= */
+
+/* Mostra o app principal e renderiza tudo. */
+function entrarApp(){
+  $('#onboarding').style.display='none';
+  $('#resumo').style.display='none';
+  $('#principal').style.display='block';
+  verificarNovoDia();
+  renderTudo();
+}
+
+/* Sorteia o desafio global do dia de forma determinística:
+   todos os usuários veem o MESMO desafio no mesmo dia, pois
+   o índice é derivado do número de dias desde 1970. */
+function desafioDoDia(){
+  const dias = Math.floor(Date.now()/86400000);
+  return DESAFIOS[dias % DESAFIOS.length];
+}
+
+/* Verifica se virou o dia; se sim, reinicia progresso diário
+   e atualiza as ofensivas (streaks). */
+function verificarNovoDia(){
+  const h = hoje();
+  if(S.dia === h) return; // ainda é o mesmo dia
+
+  // Para cada hábito: se não foi feito ontem, zera a ofensiva.
+  const ontem = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  habitosDoUsuario().forEach(def=>{
+    const hb = S.habitos[def.id] || {feito:false,streak:0,ultimoDia:null};
+    if(hb.ultimoDia !== ontem) hb.streak = 0; // pulou um dia → zera 🔥
+    hb.feito = false;
+    S.habitos[def.id] = hb;
+  });
+
+  // Ofensiva geral: se o último dia ativo não foi ontem, zera.
+  if(S.ultimoDiaAtivo !== ontem) S.streak = 0;
+
+  // Reinicia o progresso do dia.
+  S.dia = h;
+  S.pontosHoje = 0;
+  S.aneis = { agua:0, passos:0, exercicio:0, refeicoes:0 };
+  S.desafioFeito = false;
+  salvar();
+}
+
+/* Soma pontos (total + do dia) e registra atividade do dia. */
+function ganharPontos(qtd){
+  S.pontosTotais += qtd;
+  S.pontosHoje += qtd;
+  registrarAtividade();
+  salvar();
+}
+
+/* Marca que o usuário esteve ativo hoje e atualiza a ofensiva geral. */
+function registrarAtividade(){
+  const h = hoje();
+  if(S.ultimoDiaAtivo === h) return; // já contou hoje
+  const ontem = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  S.streak = (S.ultimoDiaAtivo === ontem) ? S.streak+1 : 1;
+  S.ultimoDiaAtivo = h;
+}
+
+/* =========================================================
+   RENDERIZAÇÃO DAS TELAS
+   ========================================================= */
+
+/* Renderiza todas as telas de uma vez (chamado ao abrir / ao agir). */
+function renderTudo(){
+  renderTopbar();
+  renderInicio();
+  renderPlano();
+  renderCompetir();
+  renderAmigos();
+  renderPerfil();
+}
+
+/* --- Barra superior com estatísticas --- */
+function renderTopbar(){
+  $('#tbNome').textContent = S.perfil.nome;
+  $('#tbTotal').textContent = S.pontosTotais;
+  $('#tbHoje').textContent = S.pontosHoje;
+  $('#tbStreak').textContent = '🔥'+S.streak;
+}
+
+/* --- Anel de progresso SVG --- */
+function svgAnel(pct, cor){
+  const r=40, c=2*Math.PI*r, off=c*(1-Math.min(pct,1));
+  return `<svg width="92" height="92" viewBox="0 0 92 92">
+    <circle cx="46" cy="46" r="${r}" stroke="#2e2550" stroke-width="8" fill="none"/>
+    <circle cx="46" cy="46" r="${r}" stroke="${cor}" stroke-width="8" fill="none"
+      stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"
+      style="transition:stroke-dashoffset .5s ease"/>
+  </svg>`;
+}
+
+/* --- Tela Início: desafio + anéis de meta --- */
+function renderInicio(){
+  // desafio global
+  $('#desafioTxt').textContent = desafioDoDia();
+  const bd = $('#btnDesafio');
+  if(S.desafioFeito){ bd.textContent='Desafio concluído ✅'; bd.disabled=true; }
+  else { bd.textContent='Completar desafio 🎯'; bd.disabled=false; }
+
+  // anéis (quantidade atual / meta)
+  const m = S.metas, a = S.aneis;
+  const defs = [
+    {id:'agua',      emj:'💧', nome:'Água',      cor:'#22d3ee', meta:Math.round(m.agua/250), unid:'copos', passo:1, mostra:v=>v+'/'+Math.round(m.agua/250)+' copos'},
+    {id:'passos',    emj:'🚶', nome:'Passos',    cor:'#8b5cf6', meta:m.passos, unid:'passos', passo:1000, mostra:v=>v.toLocaleString('pt-BR')},
+    {id:'exercicio', emj:'⏱️', nome:'Exercício', cor:'#22c55e', meta:m.exercicio, unid:'min', passo:5, mostra:v=>v+'/'+m.exercicio+' min'},
+    {id:'refeicoes', emj:'🥗', nome:'Refeições', cor:'#f59e0b', meta:m.refeicoes, unid:'ref', passo:1, mostra:v=>v+'/'+m.refeicoes},
+  ];
+  $('#aneisWrap').innerHTML = defs.map(d=>{
+    const v = a[d.id]||0;
+    const pct = v/d.meta;
+    return `<div class="anel-card">
+      <div class="anel">${svgAnel(pct,d.cor)}
+        <div class="valor"><span class="emj">${d.emj}</span><span class="pct">${Math.round(pct*100)}%</span></div>
+      </div>
+      <h4>${d.nome}</h4>
+      <div class="meta-txt">${d.mostra(v)}</div>
+      <div class="anel-ctrl">
+        <button data-anel="${d.id}" data-delta="${-d.passo}">−</button>
+        <button class="add" data-anel="${d.id}" data-delta="${d.passo}">+</button>
+      </div>
+    </div>`;
+  }).join('');
+  // eventos dos botões +/-
+  $$('#aneisWrap .anel-ctrl button').forEach(b=>b.onclick=()=>ajustarAnel(b.dataset.anel, +b.dataset.delta, defs));
+}
+
+/* Ajusta a quantidade de um anel e pontua ao completar a meta. */
+function ajustarAnel(id, delta, defs){
+  const def = defs.find(d=>d.id===id);
+  const antes = S.aneis[id]||0;
+  let novo = Math.max(0, antes+delta);
+  const estavaCompleto = antes >= def.meta;
+  S.aneis[id] = novo;
+  const agoraCompleto = novo >= def.meta;
+  // pontua +20 ao completar a meta pela primeira vez no dia
+  if(!estavaCompleto && agoraCompleto){
+    ganharPontos(20);
+    toast('Meta de '+def.nome+' batida! +20 🎉','pts');
+  } else { salvar(); }
+  renderInicio(); renderTopbar();
+}
+
+/* --- Botão do desafio global --- */
+$('#btnDesafio').onclick = ()=>{
+  if(S.desafioFeito) return;
+  S.desafioFeito = true;
+  ganharPontos(25);
+  toast('Desafio do dia concluído! +25 🌍','pts');
+  renderInicio(); renderTopbar(); renderCompetir();
+};
+
+/* --- Tela Plano: hábitos para eliminar e cultivar --- */
+function renderPlano(){
+  const todos = habitosDoUsuario();
+  const elim = todos.filter(h=>h.tipo==='elim');
+  const bons = todos.filter(h=>h.tipo==='bom');
+
+  const wrapE = $('#habitosEliminar');
+  if(elim.length===0){
+    wrapE.innerHTML = '<p class="mini" style="padding:4px 2px;">Você não marcou maus hábitos — mandou bem! 🙌</p>';
+  } else {
+    wrapE.innerHTML = elim.map(cardHabito).join('');
+  }
+  $('#habitosCultivar').innerHTML = bons.map(cardHabito).join('');
+
+  // liga os botões de check
+  $$('#tela-plano .check-btn').forEach(b=>b.onclick=()=>toggleHabito(b.dataset.id));
+}
+
+/* Monta o card de um hábito. */
+function cardHabito(def){
+  const hb = S.habitos[def.id] || {feito:false,streak:0};
+  const fogo = hb.streak>0 ? `<span class="streak-badge">🔥${hb.streak}</span>` : '';
+  return `<div class="habito ${hb.feito?'feito':''}">
+    <button class="check-btn ${hb.feito?'on':''}" data-id="${def.id}">${hb.feito?'✔️':def.emj}</button>
+    <div class="info">
+      <h4>${def.nome}</h4>
+      <div class="sub">${def.sub} · <span class="pts">+${def.pts} pts</span></div>
+    </div>
+    ${fogo}
+  </div>`;
+}
+
+/* Marca/desmarca um hábito e atualiza ofensiva + pontos. */
+function toggleHabito(id){
+  const def = habitosDoUsuario().find(h=>h.id===id);
+  const hb = S.habitos[id] || {feito:false,streak:0,ultimoDia:null};
+  const h = hoje();
+  const ontem = new Date(Date.now()-86400000).toISOString().slice(0,10);
+
+  if(!hb.feito){
+    // marcando como feito
+    hb.feito = true;
+    // ofensiva: continua se foi feito ontem, senão recomeça em 1
+    hb.streak = (hb.ultimoDia === ontem) ? hb.streak+1 : 1;
+    hb.ultimoDia = h;
+    S.habitos[id] = hb;
+    ganharPontos(def.pts);
+    toast(def.nome+' ✓ +'+def.pts+' pts 🔥'+hb.streak,'pts');
+  } else {
+    // desmarcando (desfaz pontos e ofensiva do dia)
+    hb.feito = false;
+    hb.streak = Math.max(0, hb.streak-1);
+    hb.ultimoDia = hb.streak>0 ? ontem : null;
+    S.habitos[id] = hb;
+    S.pontosTotais = Math.max(0, S.pontosTotais-def.pts);
+    S.pontosHoje = Math.max(0, S.pontosHoje-def.pts);
+    salvar();
+  }
+  renderPlano(); renderTopbar(); renderCompetir();
+}
+
+/* --- Tela Competir: pódio + ranking --- */
+function renderCompetir(){
+  let lista;
+  if(CLOUD.pronto && CLOUD.ranking.length){
+    // ===== RANKING REAL (usuários de verdade vindos do Firestore) =====
+    const meuCod = S.codigo;
+    const amigosCods = new Set(S.amigos.map(a=>a.codigo));
+    lista = CLOUD.ranking.map(u=>({
+      nome:   (u.codigo===meuCod) ? (S.perfil.nome+' (você)') : (u.nome||'Anônimo'),
+      ava:    u.ava || '🙂',
+      pontos: u.pontos || 0,
+      eu:     u.codigo===meuCod,
+      amigo:  amigosCods.has(u.codigo),
+    }));
+    // garante que você apareça mesmo antes do primeiro sync
+    if(!lista.some(u=>u.eu))
+      lista.push({ nome:S.perfil.nome+' (você)', ava:avatarUser(), pontos:S.pontosTotais, eu:true });
+  } else {
+    // ===== MODO OFFLINE: bots fictícios + você + amigos locais =====
+    lista = BOTS.map(b=>({ nome:b.nome, ava:b.ava, pontos:b.base, rival:b.rival }));
+    lista.push({ nome:S.perfil.nome+' (você)', ava:avatarUser(), pontos:S.pontosTotais, eu:true });
+    S.amigos.forEach(a=>lista.push({ nome:a.nome, ava:a.ava, pontos:a.pontos, amigo:true }));
+  }
+  // ordena por pontos (desc)
+  lista.sort((a,b)=>b.pontos-a.pontos);
+
+  // --- Pódio (top 3) ---
+  const top = lista.slice(0,3);
+  const ordem = [1,0,2]; // 2º, 1º, 3º (visual)
+  const med = ['🥇','🥈','🥉'];
+  $('#podioWrap').innerHTML = ordem.map(i=>{
+    const u = top[i]; if(!u) return '';
+    return `<div class="pos p${i+1}">
+      <div class="ava">${u.ava}</div>
+      <div class="barra">
+        <div class="medalha">${med[i]}</div>
+        <div class="nome">${u.nome.replace(' (você)','')}</div>
+        <div class="pt">${u.pontos}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // --- Lista completa ---
+  $('#rankLista').innerHTML = lista.map((u,i)=>{
+    const tag = u.eu?'' : u.rival?'<span class="tag-rival">RIVAL</span>' : u.amigo?'<span class="tag-amigo">AMIGO</span>':'';
+    return `<div class="rank-item ${u.eu?'eu':''}">
+      <div class="num">${i+1}</div>
+      <div class="ava-s">${u.ava}</div>
+      <div class="n">${u.nome.replace(' (você)','')} ${tag}</div>
+      <div class="p">${u.pontos}</div>
+    </div>`;
+  }).join('');
+}
+
+/* Avatar emoji do usuário (baseado no objetivo). */
+function avatarUser(){
+  return { perder:'🔥', manter:'⭐', ganhar:'💪' }[S.perfil.obj] || '🙂';
+}
+
+/* --- Tela Amigos: código próprio, adicionar e listar --- */
+function renderAmigos(){
+  $('#meuCodigo').textContent = S.codigo;
+  // Atualiza os pontos dos amigos com os dados ao vivo do ranking (se houver).
+  if(CLOUD.pronto && CLOUD.ranking.length){
+    S.amigos.forEach(a=>{
+      const r = CLOUD.ranking.find(u=>u.codigo===a.codigo);
+      if(r){ a.pontos = r.pontos||0; a.nome = r.nome||a.nome; a.ava = r.ava||a.ava; }
+    });
+  }
+  const l = $('#listaAmigos');
+  if(S.amigos.length===0){
+    l.innerHTML = '<p class="mini" style="padding:4px 2px;">Nenhum amigo ainda. Compartilhe seu código! 🙌</p>';
+  } else {
+    l.innerHTML = S.amigos.map((a,i)=>`
+      <div class="amigo-item">
+        <div class="ava-s" style="width:40px;height:40px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:20px;">${a.ava}</div>
+        <div><div style="font-weight:800;font-size:14px;">${a.nome}</div><div class="mini">${a.codigo} · ${a.pontos} pts</div></div>
+        <button class="x" data-i="${i}">✕</button>
+      </div>`).join('');
+    $$('#listaAmigos .x').forEach(b=>b.onclick=()=>removerAmigo(+b.dataset.i));
+  }
+}
+
+/* Copiar o próprio código. */
+$('#btnCopiar').onclick = ()=>{
+  navigator.clipboard?.writeText(S.codigo).catch(()=>{});
+  toast('Código copiado! 📋','ok');
+};
+
+/* Adicionar amigo pelo código.
+   [BACKEND] com Firebase conectado, busca o usuário REAL pelo código.
+   Sem backend, cai no modo simulado (perfil aleatório local). */
+$('#btnAddAmigo').onclick = async ()=>{
+  let cod = ($('#inpAmigo').value||'').trim().toUpperCase();
+  if(!cod.startsWith('VIVA-')) cod = 'VIVA-'+cod.replace('VIVA-','');
+  if(!/^VIVA-[A-Z0-9]{4}$/.test(cod)){ toast('Código inválido 🤔'); return; }
+  if(cod===S.codigo){ toast('Esse é o seu próprio código 😄'); return; }
+  if(S.amigos.some(a=>a.codigo===cod)){ toast('Vocês já são amigos 😉'); return; }
+
+  if(CLOUD.pronto && CLOUD.api){
+    // ----- BUSCA REAL no Firestore -----
+    toast('Procurando... 🔍');
+    let achado = null;
+    try{ achado = await CLOUD.api.buscarPorCodigo(cod); }catch(e){ toast('Erro de conexão 📡'); return; }
+    if(!achado){ toast('Ninguém com esse código 🙅'); return; }
+    S.amigos.push({ codigo:achado.codigo, nome:achado.nome, ava:achado.ava, pontos:achado.pontos, uid:achado.uid });
+  } else {
+    // ----- MODO OFFLINE: simulação local -----
+    const avatars=['😎','🌸','🚀','⚡','🌟','🎯','🦄','🏀'];
+    const nomes=['Alex','Sam','Jô','Kai','Nina','Lu','Max','Vic'];
+    S.amigos.push({
+      codigo:cod,
+      nome:nomes[Math.floor(Math.random()*nomes.length)],
+      ava:avatars[Math.floor(Math.random()*avatars.length)],
+      pontos:Math.floor(Math.random()*300)+50,
+    });
+  }
+  salvar();
+  $('#inpAmigo').value='';
+  toast('Amigo adicionado! 🎉','ok');
+  renderAmigos(); renderCompetir();
+};
+
+/* Remover um amigo da lista. */
+function removerAmigo(i){
+  S.amigos.splice(i,1);
+  salvar();
+  toast('Amigo removido');
+  renderAmigos(); renderCompetir();
+}
+
+/* --- Tela Perfil --- */
+function renderPerfil(){
+  const p = S.perfil, m = S.metas;
+  $('#perfilAva').textContent = avatarUser();
+  $('#perfilNome').textContent = p.nome;
+  const objTxt = { perder:'Perder peso 🔥', manter:'Manter-se saudável ⚖️', ganhar:'Ganhar massa 💪' }[p.obj];
+  $('#perfilObj').textContent = objTxt;
+  const imcEl = $('#perfilImc');
+  imcEl.textContent = 'IMC '+m.imc+' · '+m.classe;
+  imcEl.style.background = m.corImc+'33';
+  imcEl.style.color = m.corImc;
+
+  const sexoTxt = p.sexo==='m'?'Masculino':'Feminino';
+  $('#perfilDados').innerHTML = `
+    <div class="dado"><div class="k">Idade</div><div class="v">${p.idade} anos</div></div>
+    <div class="dado"><div class="k">Sexo</div><div class="v">${sexoTxt}</div></div>
+    <div class="dado"><div class="k">Peso</div><div class="v">${p.peso} kg</div></div>
+    <div class="dado"><div class="k">Altura</div><div class="v">${p.altura} cm</div></div>`;
+  $('#perfilMetas').innerHTML = `
+    <div class="dado"><div class="k">💧 Água</div><div class="v">${(m.agua/1000).toFixed(1)} L</div></div>
+    <div class="dado"><div class="k">🔥 Calorias</div><div class="v">${m.calorias}</div></div>
+    <div class="dado"><div class="k">🚶 Passos</div><div class="v">${m.passos.toLocaleString('pt-BR')}</div></div>
+    <div class="dado"><div class="k">⏱️ Exercício</div><div class="v">${m.exercicio} min</div></div>`;
+}
+
+/* Recomeçar do zero (apaga tudo). */
+$('#btnReset').onclick = ()=>{
+  if(confirm('Tem certeza? Isso apaga todos os seus dados e progresso.')){
+    localStorage.removeItem(KEY);
+    location.reload();
+  }
+};
+
+/* =========================================================
+   NAVEGAÇÃO INFERIOR
+   ========================================================= */
+$$('.nav-btn').forEach(btn=>btn.onclick=()=>{
+  $$('.nav-btn').forEach(b=>b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  $$('.tela').forEach(t=>t.classList.remove('ativa'));
+  $('#tela-'+btn.dataset.tela).classList.add('ativa');
+});
+
+/* =========================================================
+   INICIALIZAÇÃO
+   -----------------------------------------------------------
+   Se já existe usuário salvo → entra direto no app.
+   Caso contrário → inicia o onboarding.
+   [BACKEND] aqui também seria o ponto de autenticação
+   (login via Firebase Auth / Supabase Auth) e carregamento
+   do estado remoto do usuário.
+   ========================================================= */
+function init(){
+  S = carregar();
+  if(S && S.perfil && S.perfil.nome){
+    entrarApp();            // usuário existente
+  } else {
+    etapaAtual = 0;
+    renderEtapa();          // novo usuário → onboarding
+  }
+}
+init();
+</script>
+
+<!-- =========================================================
+     ADAPTADOR FIREBASE (backend real)
+     -----------------------------------------------------------
+     • Só ativa se window.VIVA_FIREBASE.apiKey estiver preenchido.
+     • Usa login anônimo (cada aparelho vira um usuário único).
+     • Grava seu perfil público em 'usuarios/{uid}' e escuta o
+       ranking global (top 50) em tempo real.
+     • Carregado via CDN oficial do Firebase (ES modules).
+     ========================================================= -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, doc, setDoc, serverTimestamp, collection,
+         query, where, getDocs, orderBy, limit, onSnapshot }
+  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const cfg = window.VIVA_FIREBASE || {};
+if (cfg && cfg.apiKey) {
+  try {
+    const app  = initializeApp(cfg);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+    const cred = await signInAnonymously(auth);  // identidade única por aparelho
+    const uid  = cred.user.uid;
+
+    // API exposta para o app principal (ver window.vivaAoConectar).
+    const api = {
+      uid,
+      // Grava/atualiza seu perfil público (merge não apaga outros campos).
+      async salvarUsuario(d){
+        await setDoc(doc(db,'usuarios',uid),
+          { ...d, uid, atualizadoEm: serverTimestamp() }, { merge:true });
+      },
+      // Busca um usuário real pelo código VIVA-XXXX.
+      async buscarPorCodigo(cod){
+        const q = query(collection(db,'usuarios'), where('codigo','==',cod));
+        const s = await getDocs(q);
+        if (s.empty) return null;
+        const d = s.docs[0].data();
+        return { uid:d.uid, nome:d.nome, ava:d.ava, pontos:d.pontos||0, codigo:d.codigo };
+      }
+    };
+
+    // Ranking global em tempo real (top 50 por pontos).
+    const rq = query(collection(db,'usuarios'), orderBy('pontos','desc'), limit(50));
+    onSnapshot(rq, snap => {
+      const arr = snap.docs.map(x => x.data());
+      if (window.vivaRanking) window.vivaRanking(arr);
+    });
+
+    if (window.vivaAoConectar) window.vivaAoConectar(api);
+    console.log('[Viva+] ☁️ Nuvem conectada. Seu uid:', uid);
+  } catch (e) {
+    console.warn('[Viva+] Falha ao conectar no Firebase (seguindo offline):', e);
+  }
+} else {
+  console.log('[Viva+] Modo offline — preencha window.VIVA_FIREBASE para ativar o online real.');
+}
+</script>
+</body>
+</html>
