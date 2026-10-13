@@ -1,1238 +1,318 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#6d28d9">
-<title>Viva+ — Sua jornada saudável 🚀</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Viva+ | Pesquisa de saúde e bem-estar</title>
+<meta name="theme-color" content="#2D2A7A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
-/* =========================================================
-   VIVA+  —  Plataforma de incentivo à saúde juvenil
-   Arquivo único (HTML + CSS + JS). 100% navegador.
-   Persistência: localStorage.
-   ========================================================= */
-
-/* ---------- Reset & variáveis de tema ---------- */
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-:root{
-  --roxo:#6d28d9; --roxo2:#8b5cf6; --ciano:#06b6d4; --ciano2:#22d3ee;
-  --grad:linear-gradient(135deg,#6d28d9 0%,#7c3aed 40%,#06b6d4 100%);
-  --grad-suave:linear-gradient(135deg,#8b5cf6,#22d3ee);
-  --fundo:#0f0a1e; --card:#1a1430; --card2:#241a40;
-  --txt:#f5f3ff; --txt2:#a89fc9; --borda:#2e2550;
-  --ok:#22c55e; --alerta:#f59e0b; --erro:#ef4444; --fogo:#fb923c;
-  --sombra:0 10px 30px rgba(0,0,0,.35);
-  --raio:22px;
-}
-/* ---------- Base ---------- */
-html,body{height:100%;}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
-  background:var(--fundo); color:var(--txt);
-  overflow-x:hidden; line-height:1.45;
-}
-/* container mobile-first, centralizado em telas grandes */
-#app{max-width:480px; margin:0 auto; min-height:100vh; position:relative; background:var(--fundo);}
-button{font-family:inherit;cursor:pointer;border:none;outline:none;color:inherit;}
-input,select{font-family:inherit;font-size:16px;}
-.oculto{display:none !important;}
-
-/* ---------- Tipografia utilitária ---------- */
-.titulo{font-size:26px;font-weight:800;letter-spacing:-.5px;}
-.subtitulo{font-size:15px;color:var(--txt2);}
-.secao-tit{font-size:18px;font-weight:800;margin:4px 0 12px;}
-.mini{font-size:12px;color:var(--txt2);}
-
-/* ---------- Botões ---------- */
-.btn{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  width:100%;padding:16px;border-radius:16px;font-size:16px;font-weight:800;
-  background:var(--grad);color:#fff;box-shadow:var(--sombra);
-  transition:transform .12s ease,opacity .2s;
-}
-.btn:active{transform:scale(.97);}
-.btn.secundario{background:var(--card2);color:var(--txt);box-shadow:none;border:1px solid var(--borda);}
-.btn:disabled{opacity:.4;}
-.btn-pequeno{width:auto;padding:10px 16px;font-size:14px;border-radius:12px;}
-
-/* ---------- Cards ---------- */
-.card{background:var(--card);border-radius:var(--raio);padding:18px;box-shadow:var(--sombra);border:1px solid var(--borda);}
-.card+.card{margin-top:14px;}
-
-/* =========================================================
-   ONBOARDING
-   ========================================================= */
-#onboarding{padding:0 0 40px;}
-.onb-topo{padding:24px 22px 10px;}
-.barra-progresso{height:8px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:16px;}
-.barra-progresso>i{display:block;height:100%;background:var(--grad-suave);width:0;transition:width .4s ease;border-radius:99px;}
-.etapa{padding:14px 22px;}
-.etapa h2{font-size:23px;font-weight:800;margin-bottom:6px;}
-.etapa p.ajuda{color:var(--txt2);font-size:14px;margin-bottom:20px;}
-.campo{margin-bottom:16px;}
-.campo label{display:block;font-size:14px;font-weight:700;margin-bottom:8px;color:var(--txt2);}
-.campo input,.campo select{
-  width:100%;padding:15px;border-radius:14px;background:var(--card2);
-  border:1.5px solid var(--borda);color:var(--txt);transition:border .2s;
-}
-.campo input:focus,.campo select:focus{border-color:var(--roxo2);}
-.linha-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-
-/* chips de seleção (sexo, objetivo, maus hábitos) */
-.chips{display:flex;flex-wrap:wrap;gap:10px;}
-.chip{
-  padding:13px 16px;border-radius:14px;background:var(--card2);
-  border:1.5px solid var(--borda);font-weight:700;font-size:14px;
-  display:flex;align-items:center;gap:8px;transition:all .18s;flex:1 1 auto;justify-content:center;
-}
-.chip.sel{background:var(--grad-suave);border-color:transparent;color:#fff;transform:scale(1.02);}
-.chip-grande{flex:1 1 100%;padding:18px;flex-direction:column;text-align:center;gap:4px;}
-.chip-grande .emj{font-size:28px;}
-.chip-grande small{font-weight:500;color:var(--txt2);font-size:12px;}
-.chip-grande.sel small{color:rgba(255,255,255,.85);}
-
-.nav-etapa{display:flex;gap:12px;margin-top:24px;}
-
-/* =========================================================
-   APP PRINCIPAL  —  barra superior, abas, telas
-   ========================================================= */
-#principal{display:none;padding-bottom:88px;}
-
-/* ---------- Barra superior (stats) ---------- */
-.topbar{
-  position:sticky;top:0;z-index:20;background:var(--grad);
-  padding:16px 18px 18px;border-radius:0 0 24px 24px;box-shadow:var(--sombra);
-}
-.topbar .ola{font-size:14px;opacity:.9;}
-.topbar .nome-user{font-size:20px;font-weight:800;}
-.stats-row{display:flex;gap:10px;margin-top:14px;}
-.stat{flex:1;background:rgba(255,255,255,.15);border-radius:16px;padding:10px;text-align:center;backdrop-filter:blur(4px);}
-.stat b{display:block;font-size:20px;font-weight:800;}
-.stat span{font-size:11px;opacity:.9;}
-
-/* ---------- Conteúdo das telas ---------- */
-.tela{display:none;padding:18px;animation:fade .3s ease;}
-.tela.ativa{display:block;}
-@keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
-
-/* ---------- Anéis de progresso circulares ---------- */
-.aneis{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.anel-card{background:var(--card);border-radius:var(--raio);padding:16px;text-align:center;border:1px solid var(--borda);box-shadow:var(--sombra);}
-.anel{position:relative;width:92px;height:92px;margin:0 auto 8px;}
-.anel svg{transform:rotate(-90deg);}
-.anel .valor{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.anel .valor .emj{font-size:22px;}
-.anel .valor .pct{font-size:12px;font-weight:800;color:var(--txt2);}
-.anel-card h4{font-size:14px;font-weight:800;}
-.anel-card .meta-txt{font-size:12px;color:var(--txt2);margin-top:2px;}
-.anel-ctrl{display:flex;gap:6px;margin-top:10px;justify-content:center;}
-.anel-ctrl button{width:34px;height:34px;border-radius:10px;background:var(--card2);border:1px solid var(--borda);font-size:18px;font-weight:800;color:var(--txt);}
-.anel-ctrl button.add{background:var(--grad-suave);border:none;color:#fff;}
-
-/* ---------- Desafio global ---------- */
-.desafio{background:linear-gradient(135deg,#f59e0b22,#ef444422);border:1.5px solid #f59e0b55;}
-.desafio .tag{display:inline-block;background:var(--alerta);color:#1a1430;font-size:11px;font-weight:800;padding:3px 10px;border-radius:99px;margin-bottom:8px;}
-
-/* ---------- Hábitos (check) ---------- */
-.habito{
-  display:flex;align-items:center;gap:14px;background:var(--card);
-  border:1px solid var(--borda);border-radius:18px;padding:14px;margin-bottom:12px;
-  transition:background .2s;
-}
-.habito.feito{background:linear-gradient(135deg,#22c55e22,#06b6d422);border-color:#22c55e66;}
-.check-btn{
-  width:52px;height:52px;flex:0 0 52px;border-radius:16px;background:var(--card2);
-  border:2px solid var(--borda);font-size:24px;display:flex;align-items:center;justify-content:center;transition:all .2s;
-}
-.check-btn.on{background:var(--ok);border-color:var(--ok);transform:scale(1.05);}
-.habito .info{flex:1;min-width:0;}
-.habito .info h4{font-size:15px;font-weight:800;}
-.habito .info .sub{font-size:12px;color:var(--txt2);}
-.habito .pts{font-size:12px;font-weight:800;color:var(--ciano2);}
-.streak-badge{font-size:13px;font-weight:800;color:var(--fogo);white-space:nowrap;}
-
-/* ---------- Ranking / pódio ---------- */
-.podio{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin:10px 0 20px;}
-.podio .pos{flex:1;text-align:center;}
-.podio .ava{width:56px;height:56px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:26px;background:var(--grad-suave);border:3px solid var(--card);}
-.podio .barra{border-radius:14px 14px 0 0;background:var(--card2);padding:10px 6px;border:1px solid var(--borda);border-bottom:none;}
-.podio .p1 .ava{width:66px;height:66px;border-color:#fbbf24;box-shadow:0 0 20px #fbbf2466;}
-.podio .p1 .barra{height:92px;background:linear-gradient(180deg,#fbbf2433,var(--card2));}
-.podio .p2 .barra{height:70px;}
-.podio .p3 .barra{height:54px;}
-.podio .nome{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.podio .pt{font-size:12px;color:var(--ciano2);font-weight:800;}
-.medalha{font-size:20px;}
-
-.rank-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:var(--card);border:1px solid var(--borda);margin-bottom:8px;}
-.rank-item.eu{background:var(--grad-suave);border-color:transparent;}
-.rank-item .num{font-weight:800;width:26px;text-align:center;font-size:15px;}
-.rank-item .ava-s{width:40px;height:40px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:20px;}
-.rank-item.eu .ava-s{background:rgba(255,255,255,.25);}
-.rank-item .n{flex:1;font-weight:700;font-size:14px;}
-.rank-item .p{font-weight:800;font-size:14px;}
-.tag-rival{font-size:10px;background:var(--erro);padding:2px 7px;border-radius:99px;font-weight:800;}
-.tag-amigo{font-size:10px;background:var(--ciano);padding:2px 7px;border-radius:99px;font-weight:800;}
-
-/* ---------- Amigos ---------- */
-.codigo-box{background:var(--grad);border-radius:var(--raio);padding:20px;text-align:center;box-shadow:var(--sombra);}
-.codigo-box .cod{font-size:30px;font-weight:800;letter-spacing:3px;margin:6px 0;font-family:'Courier New',monospace;}
-.add-amigo{display:flex;gap:10px;margin:16px 0;}
-.add-amigo input{flex:1;padding:14px;border-radius:14px;background:var(--card2);border:1.5px solid var(--borda);color:var(--txt);text-transform:uppercase;}
-.amigo-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--card);border:1px solid var(--borda);margin-bottom:8px;}
-.amigo-item .x{margin-left:auto;width:34px;height:34px;border-radius:10px;background:var(--card2);color:var(--erro);font-size:18px;font-weight:800;}
-
-/* ---------- Perfil ---------- */
-.perfil-topo{text-align:center;padding:10px 0 20px;}
-.perfil-ava{width:88px;height:88px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:44px;margin:0 auto 10px;box-shadow:var(--sombra);}
-.dados-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.dado{background:var(--card2);border-radius:14px;padding:12px;}
-.dado .k{font-size:11px;color:var(--txt2);}
-.dado .v{font-size:16px;font-weight:800;margin-top:2px;}
-.badge-imc{display:inline-block;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:800;}
-
-/* ---------- Navegação inferior fixa ---------- */
-.bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;z-index:30;
-  display:flex;background:var(--card);border-top:1px solid var(--borda);
-  padding:8px 4px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,.3);
-}
-.nav-btn{flex:1;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;border-radius:12px;color:var(--txt2);transition:color .2s;}
-.nav-btn .ic{font-size:22px;transition:transform .2s;}
-.nav-btn span{font-size:10px;font-weight:700;}
-.nav-btn.ativo{color:var(--txt);}
-.nav-btn.ativo .ic{transform:translateY(-2px) scale(1.15);}
-.nav-btn.ativo span{background:var(--grad-suave);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
-
-/* ---------- Toast ---------- */
-#toast-wrap{position:fixed;bottom:100px;left:0;right:0;z-index:100;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;}
-.toast{
-  background:var(--card2);color:var(--txt);padding:12px 20px;border-radius:99px;
-  font-weight:700;font-size:14px;box-shadow:var(--sombra);border:1px solid var(--borda);
-  display:flex;align-items:center;gap:8px;animation:toastIn .3s ease;max-width:90%;
-}
-.toast.ok{border-color:var(--ok);}
-.toast.pts{background:var(--grad-suave);border:none;color:#fff;}
-@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.9);}to{opacity:1;transform:none;}}
-
-/* ---------- Resumo de metas (pós-onboarding) ---------- */
-#resumo{display:none;padding:22px;}
-.resumo-item{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--borda);border-radius:16px;padding:14px;margin-bottom:10px;}
-.resumo-item .emj{font-size:28px;}
-.resumo-item .t{flex:1;}
-.resumo-item .t h4{font-size:14px;color:var(--txt2);font-weight:700;}
-.resumo-item .t b{font-size:18px;}
-
-/* confete simples */
-.pulse{animation:pulse .5s;}
-@keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.3);}100%{transform:scale(1);}}
+:root{--bg:#F5F7FB;--card:#fff;--ink:#16163A;--mut:#55587A;--pri:#2D2A7A;--on:#fff;--line:#D6DAEA;--ok:#0E7C66}
+@media(prefers-color-scheme:dark){:root{--bg:#0F1030;--card:#1A1B45;--ink:#EEF0FF;--mut:#B3B7DE;--pri:#8E8BFF;--on:#0F1030;--line:#33356B;--ok:#4FD1B5}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+h1,h2,h3{font-family:Sora,system-ui,sans-serif;line-height:1.2;margin:0 0 .5em}
+h2{font-size:1.1rem}
+header{padding:20px 16px 8px;max-width:760px;margin:auto}
+.logo{font:800 2rem Sora,sans-serif;color:var(--pri)}.logo span{color:var(--ok)}
+main{max-width:760px;margin:auto;padding:8px 16px 96px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:0 0 16px}
+.btn{display:block;width:100%;min-height:54px;border:0;border-radius:12px;background:var(--pri);color:var(--on);font:700 1.05rem Sora,sans-serif;padding:12px 18px;cursor:pointer;text-align:center;margin:0 0 12px}
+.btn.sec{background:transparent;color:var(--pri);border:2px solid var(--pri)}
+.btn:disabled{opacity:.6}
+:focus-visible{outline:3px solid var(--ok);outline-offset:2px}
+fieldset{border:0;padding:0;margin:0 0 22px}
+legend{font-weight:700;margin-bottom:8px;padding:0}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opts label{flex:1 1 auto;min-width:64px;position:relative}
+.opts input{position:absolute;opacity:0;inset:0}
+.opts span{display:block;min-height:46px;padding:10px 12px;border:2px solid var(--line);border-radius:12px;text-align:center;cursor:pointer;background:var(--card)}
+.opts input:checked+span{background:var(--pri);color:var(--on);border-color:var(--pri);font-weight:700}
+.opts input:focus-visible+span{outline:3px solid var(--ok);outline-offset:2px}
+.opts .skip span{border-style:dashed;color:var(--mut)}
+select,input[type=number]{width:100%;min-height:50px;font:inherit;padding:10px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hint{color:var(--mut);font-size:.92rem;margin:4px 0 12px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat b{display:block;font:800 1.6rem Sora,sans-serif;color:var(--pri)}
+.chart{position:relative;height:240px}
+.txt{color:var(--mut);font-size:.88rem;margin:8px 0 0}
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+.nav button{flex:1;min-height:48px;background:none;border:0;color:var(--mut);font:600 .95rem Sora,sans-serif;cursor:pointer;border-radius:10px}
+.nav button[aria-current=page]{color:var(--pri);background:color-mix(in srgb,var(--pri) 12%,transparent)}
+.warn{border-left:5px solid var(--ok)}
+.err{color:#C0263F;font-weight:700}
+.big{font:800 4rem/1 Sora,sans-serif;color:var(--pri);margin:4px 0}
+.bar{height:12px;border-radius:8px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--ok)}
+.row{display:flex;justify-content:space-between;gap:10px;margin:10px 0 4px}
+ul{padding-left:20px;margin:6px 0}
 </style>
 </head>
 <body>
-<div id="app">
-<!-- =========================================================
-     TELA 1: ONBOARDING (fluxo em etapas)
-     ========================================================= -->
-<section id="onboarding">
-  <div class="onb-topo">
-    <div class="titulo">Viva+ 🚀</div>
-    <div class="subtitulo">Bora criar sua jornada saudável? 💪</div>
-    <div class="barra-progresso"><i id="barraOnb"></i></div>
-    <div class="mini" id="passoTxt" style="margin-top:8px;">Passo 1 de 6</div>
-  </div>
-  <div id="etapasWrap"></div>
-</section>
+<header>
+  <div class="logo" role="img" aria-label="Viva mais">Viva<span>+</span></div>
+  <p class="hint" style="margin:0">Pesquisa anônima sobre saúde e bem-estar dos jovens</p>
+</header>
+<main id="main" tabindex="-1"></main>
+<nav class="nav" aria-label="Principal">
+  <button data-v="home">Resultados</button>
+  <button data-v="info">Sobre</button>
+</nav>
 
-<!-- =========================================================
-     TELA 2: RESUMO DE METAS
-     ========================================================= -->
-<section id="resumo"></section>
-
-<!-- =========================================================
-     TELA 3: APP PRINCIPAL
-     ========================================================= -->
-<section id="principal">
-  <!-- Barra superior com stats -->
-  <header class="topbar">
-    <div class="ola">Olá, bora pra cima! 🔥</div>
-    <div class="nome-user" id="tbNome">—</div>
-    <div class="stats-row">
-      <div class="stat"><b id="tbTotal">0</b><span>Pontos totais</span></div>
-      <div class="stat"><b id="tbHoje">0</b><span>Pontos hoje</span></div>
-      <div class="stat"><b id="tbStreak">🔥0</b><span>Ofensiva</span></div>
-    </div>
-  </header>
-
-  <!-- ===== Aba INÍCIO ===== -->
-  <div class="tela ativa" id="tela-inicio">
-    <div class="card desafio" style="margin-bottom:16px;">
-      <span class="tag">🌍 DESAFIO GLOBAL DO DIA · +25 pts</span>
-      <h3 id="desafioTxt" style="font-size:17px;font-weight:800;margin:4px 0 12px;">—</h3>
-      <button class="btn" id="btnDesafio" style="padding:12px;">Completar desafio 🎯</button>
-    </div>
-    <h3 class="secao-tit">Suas metas de hoje 🎯</h3>
-    <div class="aneis" id="aneisWrap"></div>
-  </div>
-
-  <!-- ===== Aba PLANO ===== -->
-  <div class="tela" id="tela-plano">
-    <h3 class="secao-tit">🚫 Hábitos para eliminar <small class="mini">+15 pts cada</small></h3>
-    <div id="habitosEliminar"></div>
-    <h3 class="secao-tit" style="margin-top:20px;">✨ Hábitos para cultivar <small class="mini">+10 pts cada</small></h3>
-    <div id="habitosCultivar"></div>
-  </div>
-
-  <!-- ===== Aba COMPETIR ===== -->
-  <div class="tela" id="tela-competir">
-    <h3 class="secao-tit" style="text-align:center;">🏆 Ranking Mundial</h3>
-    <div class="podio" id="podioWrap"></div>
-    <div id="rankLista"></div>
-  </div>
-
-  <!-- ===== Aba AMIGOS ===== -->
-  <div class="tela" id="tela-amigos">
-    <div class="codigo-box">
-      <div class="mini" style="color:rgba(255,255,255,.85)">Seu código de amigo</div>
-      <div class="cod" id="meuCodigo">VIVA-0000</div>
-      <button class="btn secundario btn-pequeno" id="btnCopiar" style="margin:0 auto;background:rgba(255,255,255,.2);border:none;color:#fff;">📋 Copiar código</button>
-    </div>
-    <h3 class="secao-tit" style="margin-top:18px;">Adicionar amigo</h3>
-    <div class="add-amigo">
-      <input id="inpAmigo" placeholder="VIVA-XXXX" maxlength="9">
-      <button class="btn btn-pequeno" id="btnAddAmigo">Add</button>
-    </div>
-    <h3 class="secao-tit">Seus amigos 👥</h3>
-    <div id="listaAmigos"></div>
-  </div>
-
-  <!-- ===== Aba PERFIL ===== -->
-  <div class="tela" id="tela-perfil">
-    <div class="perfil-topo">
-      <div class="perfil-ava" id="perfilAva">🙂</div>
-      <div class="titulo" id="perfilNome">—</div>
-      <div class="subtitulo" id="perfilObj">—</div>
-      <div style="margin-top:8px;"><span class="badge-imc" id="perfilImc">—</span></div>
-    </div>
-    <div class="card">
-      <h3 class="secao-tit">Seus dados</h3>
-      <div class="dados-grid" id="perfilDados"></div>
-    </div>
-    <div class="card">
-      <h3 class="secao-tit">Suas metas diárias</h3>
-      <div class="dados-grid" id="perfilMetas"></div>
-    </div>
-    <button class="btn secundario" id="btnReset" style="margin-top:16px;color:var(--erro);">🔄 Recomeçar do zero</button>
-    <p class="mini" style="text-align:center;margin-top:14px;">Viva+ · feito com 💜 para sua saúde</p>
-  </div>
-
-  <!-- Navegação inferior fixa -->
-  <nav class="bottom-nav">
-    <button class="nav-btn ativo" data-tela="inicio"><span class="ic">🏠</span><span>Início</span></button>
-    <button class="nav-btn" data-tela="plano"><span class="ic">📋</span><span>Plano</span></button>
-    <button class="nav-btn" data-tela="competir"><span class="ic">🏆</span><span>Competir</span></button>
-    <button class="nav-btn" data-tela="amigos"><span class="ic">👥</span><span>Amigos</span></button>
-    <button class="nav-btn" data-tela="perfil"><span class="ic">🙂</span><span>Perfil</span></button>
-  </nav>
-</section>
-
-<!-- container de toasts -->
-<div id="toast-wrap"></div>
-</div>
-
-<!-- =========================================================
-     CONFIGURAÇÃO DO BACKEND (Firebase)  —  COLE SUAS CHAVES AQUI
-     -----------------------------------------------------------
-     • Deixe apiKey vazio ("") para rodar em MODO OFFLINE (só localStorage).
-     • Preencha com os dados do SEU projeto Firebase para ativar
-       amigos e ranking REAIS (funciona 100% no GitHub Pages).
-     • Onde pegar: console.firebase.google.com → seu projeto →
-       ⚙️ Configurações → "Seus apps" → Config do SDK.
-     ========================================================= -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-window.VIVA_FIREBASE = {
-  apiKey:            "AIzaSyAj-g2iRhloi_Gt7fj1INhlzLfWgUoer44",
-  authDomain:        "vivamais-6e283.firebaseapp.com",
-  projectId:         "vivamais-6e283",
-  storageBucket:     "vivamais-6e283.firebasestorage.app",
-  messagingSenderId: "782838812818",
-  appId:             "1:782838812818:web:7f69f69e42793e0b6ac6ba"
-};
-</script>
-<script>
-/* =========================================================
-   VIVA+  —  LÓGICA DA APLICAÇÃO
-   -----------------------------------------------------------
-   • Tudo roda no navegador, sem bibliotecas externas.
-   • Estado persistido em localStorage (chave 'vivaplus').
-   • Pronto para receber backend (Firebase/Supabase) depois.
-     Procure por [BACKEND] no código para ver onde integrar.
-   ========================================================= */
-'use strict';
+/* ====== CONFIGURE AQUI ====== */
+const SUPABASE_URL = "";   // ex: https://abcd.supabase.co
+const SUPABASE_KEY = "";   // chave "anon public"
+const TURMAS = ["6º ano","7º ano","8º ano","9º ano","1º ano EM","2º ano EM","3º ano EM","Outra"];
+/* ============================ */
 
-/* ---------- Chaves de armazenamento ---------- */
-const KEY = 'vivaplus_v1';
+const sb = (SUPABASE_URL && SUPABASE_KEY && window.supabase) ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const $ = s => document.querySelector(s);
+const main = $("#main");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const COR = ["#4B47D6","#14A38B","#F2A900","#E04F6D","#8E6BDB","#3DA9FC","#7A7F9D"];
+const FAIXAS = [["10-12",10,12],["13-14",13,14],["15-16",15,16],["17-18",17,18],["19+",19,99]];
+const faixa = i => (FAIXAS.find(f => i>=f[1] && i<=f[2])||[])[0];
+const DIAS = [0,1,2,3,4,5,6,7].map(n=>[n,String(n)]);
+const FREQ = ["Nunca","Já experimentei","Às vezes","Com frequência"];
+const HABITOS = ["Beber água","Dormir bem","Fazer exercícios","Comer frutas e verduras","Meditar ou relaxar","Conversar com amigos e família","Limitar o tempo de tela","Nenhum deles"];
+const CATS = ["Abaixo do peso","Peso adequado","Sobrepeso","Obesidade"];
 
-/* ---------- Estado global da aplicação ---------- */
-let S = null;            // objeto de estado do usuário
-const onb = {};          // dados temporários do onboarding
-let etapaAtual = 0;      // etapa atual do onboarding (0..5)
+/* ---------- 1 resposta por aparelho ---------- */
+const getCookie = n => (document.cookie.match(new RegExp("(?:^|; )"+n+"=([^;]*)"))||[])[1];
+const setCookie = (n,v) => document.cookie = `${n}=${v}; max-age=63072000; path=/; SameSite=Lax`;
+function deviceId(){
+  let id = localStorage.getItem("viva_id") || getCookie("viva_id");
+  if(!id){ id = crypto.randomUUID(); }
+  localStorage.setItem("viva_id",id); setCookie("viva_id",id); return id;
+}
+const jaRespondeu = () => !!(localStorage.getItem("viva_res") || getCookie("viva_ok"));
 
-/* ---------- Camada de nuvem (backend) ----------
-   CLOUD.api  → preenchido quando o Firebase conecta (ver adaptador no fim).
-   CLOUD.ranking → ranking global em tempo real (lista de usuários reais).
-   Enquanto não houver backend configurado, o app funciona 100% offline. */
-const CLOUD = { api:null, pronto:false, ranking:[] };
-
-/* Chamado pelo adaptador Firebase assim que a nuvem conecta. */
-window.vivaAoConectar = (api)=>{
-  CLOUD.api = api; CLOUD.pronto = true;
-  if(S && S.perfil && S.perfil.nome) salvar();   // registra você no ranking
-  if(S && S.perfil) renderCompetir();
-};
-/* Chamado pelo adaptador sempre que o ranking global muda (tempo real). */
-window.vivaRanking = (arr)=>{
-  CLOUD.ranking = Array.isArray(arr) ? arr : [];
-  if(S && S.perfil && document.getElementById('principal').style.display!=='none'){
-    renderCompetir(); renderAmigos();
-  }
-};
-
-/* ---------- Utilitários ---------- */
-const $ = (s,el=document)=>el.querySelector(s);
-const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
-const hoje = ()=> new Date().toISOString().slice(0,10); // 'AAAA-MM-DD'
-
-/* Salva o estado no localStorage e sincroniza com a nuvem (se conectada).
-   [BACKEND] a sincronização remota acontece aqui (Firestore). */
-function salvar(){
-  localStorage.setItem(KEY, JSON.stringify(S));
-  // Espelha seus dados públicos no ranking global (nome, avatar, pontos).
-  if(CLOUD.api && S && S.perfil && S.perfil.nome){
-    CLOUD.api.salvarUsuario({
-      codigo: S.codigo,
-      nome:   S.perfil.nome,
-      ava:    avatarUser(),
-      pontos: S.pontosTotais,
-      obj:    S.perfil.obj
-    }).catch(()=>{}); // falha de rede não quebra o app (segue offline)
-  }
+/* ---------- dados ---------- */
+async function lerTudo(){
+  if(sb){ const {data,error}=await sb.from("respostas").select("*").limit(5000); if(error) throw error; return data; }
+  return JSON.parse(localStorage.getItem("viva_demo")||"[]");
+}
+async function salvar(r){
+  if(sb){ const {error}=await sb.from("respostas").insert(r); if(error) throw error; }
+  else { const d=JSON.parse(localStorage.getItem("viva_demo")||"[]"); d.push(r); localStorage.setItem("viva_demo",JSON.stringify(d)); }
 }
 
-/* Carrega o estado do localStorage. */
-function carregar(){
-  try{ return JSON.parse(localStorage.getItem(KEY)); }catch(e){ return null; }
+/* ---------- IMC ---------- */
+/* Adultos (19+): cortes clássicos. Menores: estimativa por interpolação das curvas IMC-por-idade da OMS (2007)
+   entre 10 e 19 anos (abaixo do peso = -2 DP, sobrepeso = +1 DP, obesidade = +2 DP). Referência aproximada. */
+function cortes(idade,sexo){
+  if(idade>=19) return [18.5,25,30];
+  if(!sexo) return null;
+  const A = sexo==="Masculino" ? [[13.7,16.5],[18.5,25.4],[21.4,29.7]] : [[13.5,16.5],[19.0,25.0],[22.6,30.0]];
+  const t = Math.min(Math.max((idade-10)/9,0),1);
+  return A.map(([a,b])=>a+(b-a)*t);
+}
+function calcIMC(peso,alt,idade,sexo){
+  if(!peso||!alt) return {};
+  const h=alt/100, imc=peso/(h*h), c=cortes(idade,sexo);
+  const out={imc:Math.round(imc*10)/10};
+  if(!c) return out;
+  out.imc_cat = imc<c[0]?CATS[0]:imc<c[1]?CATS[1]:imc<c[2]?CATS[2]:CATS[3];
+  out.faixaKg=[Math.round(c[0]*h*h), Math.round(c[1]*h*h)];
+  return out;
 }
 
-/* Mostra um toast (feedback visual rápido). */
-function toast(msg, tipo=''){
-  const w = $('#toast-wrap');
-  const t = document.createElement('div');
-  t.className = 'toast ' + tipo;
-  t.textContent = msg;
-  w.appendChild(t);
-  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(10px)'; }, 1800);
-  setTimeout(()=>t.remove(), 2150);
-}
-
-/* Gera um código único de amigo tipo VIVA-A1B2. */
-function gerarCodigo(){
-  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let r='';
-  for(let i=0;i<4;i++) r += c[Math.floor(Math.random()*c.length)];
-  return 'VIVA-'+r;
-}
-
-/* =========================================================
-   DEFINIÇÕES DE CONTEÚDO
-   ========================================================= */
-
-/* Maus hábitos oferecidos no onboarding. */
-const MAUS_HABITOS = [
-  {id:'fumar',   nome:'Fumar',          emj:'🚬'},
-  {id:'alcool',  nome:'Álcool',         emj:'🍺'},
-  {id:'vape',    nome:'Vape',           emj:'💨'},
-  {id:'refri',   nome:'Refrigerante',   emj:'🥤'},
-  {id:'doces',   nome:'Doces',          emj:'🍭'},
-  {id:'fastfood',nome:'Fast food',      emj:'🍔'},
-  {id:'tela',    nome:'Excesso de tela',emj:'📱'},
-  {id:'tarde',   nome:'Dormir tarde',   emj:'🌙'},
+/* ---------- pontuação (estimativa educativa) ---------- */
+const L=(m)=>v=>m[v];
+const ITENS = [ // [campo, nome, peso, função de nota 0-100, dica]
+ ["imc_cat","IMC",2,L({"Peso adequado":100,"Abaixo do peso":60,"Sobrepeso":60,"Obesidade":30}),null],
+ ["sono","Sono",2,L({"8 a 9h":100,"Mais de 9h":80,"6 a 7h":65,"Menos de 6h":30}),"Adolescentes precisam de 8 a 10 horas de sono. Tente dormir e acordar em horários parecidos."],
+ ["atividade","Atividade física",2,v=>v==null?undefined:Math.round(v/7*100),"A OMS recomenda 60 minutos de atividade por dia. Comece com caminhadas ou esportes com amigos."],
+ ["agua","Água",1,L({"Menos de 1 L":30,"1 a 2 L":75,"Mais de 2 L":100}),"Deixe uma garrafa por perto e beba ao longo do dia."],
+ ["frutas","Frutas e verduras",1,v=>v==null?undefined:Math.round(v/7*100),"Inclua uma fruta ou verdura em pelo menos uma refeição por dia."],
+ ["telas","Tempo de tela",1,L({"Até 2h":100,"3 a 4h":75,"5 a 7h":45,"8h ou mais":20}),"Faça pausas das telas, principalmente antes de dormir."],
+ ["humor","Humor",2,v=>v==null?undefined:Math.round((v-1)/4*100),"Conversar com alguém de confiança ajuda. Se o humor está baixo há semanas, procure apoio."],
+ ["estresse","Estresse",1,v=>v==null?undefined:Math.round((5-v)/4*100),"Pausas, respiração, sono e movimento ajudam a reduzir o estresse."],
+ ["saude_fisica","Saúde física percebida",1,v=>v==null?undefined:Math.round((v-1)/4*100),null],
+ ["cigarro","Cigarro, vape ou narguilé",2,L({"Nunca":100,"Já experimentei":85,"Às vezes":35,"Com frequência":5}),"Fumar prejudica pulmão e coração. O SUS oferece ajuda gratuita para parar."],
+ ["maconha","Maconha",2,L({"Nunca":100,"Já experimentei":85,"Às vezes":35,"Com frequência":5}),"O uso frequente na adolescência pode afetar memória, atenção e humor. Procure apoio se sentir que perdeu o controle."],
+ ["alcool","Álcool",1,L({"Nunca":100,"Já experimentei":85,"Às vezes":40,"Com frequência":10}),"O álcool faz mal ao cérebro em desenvolvimento. Menores de 18 não devem beber."],
+ ["habitos","Bons hábitos",1,v=>!v||!v.length?undefined:v.includes("Nenhum deles")?0:Math.min(100,Math.round(v.length/5*100)),"Escolha um hábito novo por semana, um de cada vez."]
 ];
+function pontuar(r){
+  let soma=0,pesos=0,n=0; const it=[];
+  ITENS.forEach(([k,nome,p,f,dica])=>{ const s=f(r[k]); if(s==null) return; soma+=s*p; pesos+=p; n++; it.push({k,nome,s,dica}); });
+  return {pct: n>=4 ? Math.round(soma/pesos) : null, it, n};
+}
 
-/* Hábitos saudáveis a cultivar (fixos). */
-const BONS_HABITOS = [
-  {id:'agua',   nome:'Beber bastante água', emj:'💧', sub:'Hidratação em dia'},
-  {id:'comer',  nome:'Comer bem',           emj:'🥗', sub:'Comida de verdade'},
-  {id:'treino', nome:'Exercitar-se',        emj:'🏃', sub:'Mexa o corpo'},
-  {id:'dormir', nome:'Dormir bem',          emj:'😴', sub:'7-9h de sono'},
+/* ---------- navegação ---------- */
+function go(v){
+  document.querySelectorAll(".nav button").forEach(b=>{ if(b.dataset.v===v) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+  ({home,info,quiz,resultado})[v]();
+  scrollTo(0,0); main.focus({preventScroll:true});
+}
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>go(b.dataset.v));
+
+/* ---------- questionário ---------- */
+const Q = [
+ {g:"Corpo e rotina"},
+ {k:"saude_fisica",n:1,t:"Como você avalia sua saúde física?",o:[[1,"Muito ruim"],[2,"Ruim"],[3,"Regular"],[4,"Boa"],[5,"Ótima"]]},
+ {k:"sono",t:"Quantas horas você dorme por noite?",o:["Menos de 6h","6 a 7h","8 a 9h","Mais de 9h"]},
+ {k:"atividade",n:1,t:"Em quantos dias da semana você pratica atividade física?",o:DIAS},
+ {k:"agua",t:"Quanta água você bebe por dia?",o:["Menos de 1 L","1 a 2 L","Mais de 2 L"]},
+ {k:"frutas",n:1,t:"Em quantos dias da semana você come frutas ou verduras?",o:DIAS},
+ {k:"telas",t:"Quantas horas por dia você passa em telas (celular, jogos, TV)?",o:["Até 2h","3 a 4h","5 a 7h","8h ou mais"]},
+ {g:"Mente e emoções"},
+ {k:"humor",n:1,t:"Como tem sido seu humor nas últimas semanas?",o:[[1,"Muito baixo"],[2,"Baixo"],[3,"Neutro"],[4,"Bom"],[5,"Ótimo"]]},
+ {k:"estresse",n:1,t:"Quanto estresse ou ansiedade você sente?",o:[[1,"Nenhum"],[2,"Pouco"],[3,"Médio"],[4,"Alto"],[5,"Muito alto"]]},
+ {g:"Substâncias (anônimo, ninguém vai saber quem você é)"},
+ {k:"cigarro",t:"Você fuma cigarro, vape ou narguilé?",o:FREQ},
+ {k:"maconha",t:"Você usa maconha?",o:FREQ},
+ {k:"alcool",t:"Você consome bebida alcoólica?",o:FREQ},
 ];
+const radios = (name,opts) => `<div class="opts">${opts.map(o=>{const v=Array.isArray(o)?o[0]:o,l=Array.isArray(o)?o[1]:o;return `<label><input type="radio" name="${name}" value="${esc(v)}"><span>${esc(l)}</span></label>`}).join("")}<label class="skip"><input type="radio" name="${name}" value=""><span>Não sei / prefiro pular</span></label></div>`;
 
-/* Lista rotativa de desafios globais diários. */
-const DESAFIOS = [
-  'Beba 3L de água hoje 💧',
-  'Caminhe 10.000 passos 🚶',
-  'Fique sem telas 1h antes de dormir 📵',
-  'Coma 3 porções de frutas 🍎',
-  'Faça 30 min de exercício 💪',
-  'Durma antes das 23h 😴',
-  'Nenhum refrigerante hoje 🚫🥤',
-  'Alongue-se por 10 minutos 🧘',
-  'Suba escadas em vez do elevador 🪜',
-  'Coma uma refeição sem açúcar 🥙',
-  'Medite por 5 minutos 🧠',
-  'Tome café da manhã saudável 🥚',
-  'Faça uma pausa ativa a cada hora ⏰',
-  'Troque o doce por uma fruta 🍓',
-];
-
-/* Nomes fictícios para popular o ranking (simulação).
-   [BACKEND] no futuro, essa lista virá do servidor com usuários reais. */
-const BOTS = [
-  {nome:'Lary 🔥', ava:'🦄', base:420, rival:true},
-  {nome:'Theo', ava:'😎', base:380},
-  {nome:'Mari', ava:'🌸', base:355},
-  {nome:'Gui', ava:'🚀', base:290, rival:true},
-  {nome:'Bia', ava:'🌟', base:250},
-  {nome:'Rafa', ava:'⚡', base:210},
-  {nome:'Duda', ava:'🎯', base:170},
-  {nome:'Pedro', ava:'🏀', base:120},
-];
-
-/* =========================================================
-   ONBOARDING  —  fluxo em 6 etapas com barra de progresso
-   ========================================================= */
-
-/* Define o HTML de cada etapa. Cada função devolve a marcação. */
-const ETAPAS = [
-  // 1) Nome / apelido
-  ()=>`
-    <h2>Como podemos te chamar? 👋</h2>
-    <p class="ajuda">Pode ser seu nome ou um apelido maneiro.</p>
-    <div class="campo">
-      <label>Nome ou apelido</label>
-      <input id="f_nome" placeholder="Ex: Alex" value="${onb.nome||''}" maxlength="18">
-    </div>`,
-  // 2) Idade + sexo
-  ()=>`
-    <h2>Fala um pouco de você 🧬</h2>
-    <p class="ajuda">Usamos isso só para calcular suas metas.</p>
-    <div class="campo">
-      <label>Idade</label>
-      <input id="f_idade" type="number" min="10" max="99" placeholder="Ex: 16" value="${onb.idade||''}">
-    </div>
-    <div class="campo">
-      <label>Sexo biológico</label>
-      <div class="chips" id="f_sexo">
-        <div class="chip ${onb.sexo==='m'?'sel':''}" data-v="m">♂️ Masculino</div>
-        <div class="chip ${onb.sexo==='f'?'sel':''}" data-v="f">♀️ Feminino</div>
-      </div>
-    </div>`,
-  // 3) Peso + altura
-  ()=>`
-    <h2>Peso e altura ⚖️</h2>
-    <p class="ajuda">Pra calcular seu IMC e suas calorias.</p>
-    <div class="linha-2">
-      <div class="campo">
-        <label>Peso (kg)</label>
-        <input id="f_peso" type="number" min="25" max="250" placeholder="Ex: 60" value="${onb.peso||''}">
-      </div>
-      <div class="campo">
-        <label>Altura (cm)</label>
-        <input id="f_altura" type="number" min="100" max="230" placeholder="Ex: 170" value="${onb.altura||''}">
-      </div>
-    </div>`,
-  // 4) Sedentarismo + frequência
-  ()=>`
-    <h2>Como é sua rotina? 🏃</h2>
-    <p class="ajuda">Seja sincero — isso ajusta suas metas.</p>
-    <div class="campo">
-      <label>Nível de atividade</label>
-      <div class="chips" id="f_ativ" style="flex-direction:column;">
-        <div class="chip chip-grande ${onb.ativ==='sed'?'sel':''}" data-v="sed"><span><span class="emj">🛋️</span> Sedentário</span><small>Pouco ou nenhum exercício</small></div>
-        <div class="chip chip-grande ${onb.ativ==='leve'?'sel':''}" data-v="leve"><span><span class="emj">🚶</span> Leve</span><small>1-3 dias por semana</small></div>
-        <div class="chip chip-grande ${onb.ativ==='mod'?'sel':''}" data-v="mod"><span><span class="emj">🏃</span> Moderado</span><small>3-5 dias por semana</small></div>
-        <div class="chip chip-grande ${onb.ativ==='alto'?'sel':''}" data-v="alto"><span><span class="emj">🔥</span> Intenso</span><small>6-7 dias por semana</small></div>
-      </div>
-    </div>`,
-  // 5) Maus hábitos (múltipla escolha)
-  ()=>`
-    <h2>O que quer largar? 🚫</h2>
-    <p class="ajuda">Marque os hábitos que quer eliminar (pode pular).</p>
-    <div class="chips" id="f_maus">
-      ${MAUS_HABITOS.map(h=>`<div class="chip ${(onb.maus||[]).includes(h.id)?'sel':''}" data-v="${h.id}">${h.emj} ${h.nome}</div>`).join('')}
-    </div>`,
-  // 6) Objetivo principal
-  ()=>`
-    <h2>Qual seu objetivo? 🎯</h2>
-    <p class="ajuda">Vamos ajustar suas calorias de acordo.</p>
-    <div class="chips" id="f_obj" style="flex-direction:column;">
-      <div class="chip chip-grande ${onb.obj==='perder'?'sel':''}" data-v="perder"><span class="emj">🔥</span> Perder peso<small>Déficit calórico leve</small></div>
-      <div class="chip chip-grande ${onb.obj==='manter'?'sel':''}" data-v="manter"><span class="emj">⚖️</span> Manter-se saudável<small>Manutenção de peso</small></div>
-      <div class="chip chip-grande ${onb.obj==='ganhar'?'sel':''}" data-v="ganhar"><span class="emj">💪</span> Ganhar massa<small>Superávit calórico</small></div>
-    </div>`,
-];
-
-/* Renderiza a etapa atual do onboarding. */
-function renderEtapa(){
-  const wrap = $('#etapasWrap');
-  const total = ETAPAS.length;
-  const ehUltima = etapaAtual === total-1;
-  wrap.innerHTML = `
-    <div class="etapa">
-      ${ETAPAS[etapaAtual]()}
-      <div class="nav-etapa">
-        ${etapaAtual>0 ? '<button class="btn secundario" id="btnVoltar" style="flex:0 0 90px;">Voltar</button>' : ''}
-        <button class="btn" id="btnAvancar">${ehUltima?'Criar meu plano 🚀':'Continuar'}</button>
-      </div>
-    </div>`;
-  // barra de progresso
-  $('#barraOnb').style.width = ((etapaAtual)/(total-1)*100)+'%';
-  $('#passoTxt').textContent = `Passo ${etapaAtual+1} de ${total}`;
-  ligarEventosEtapa();
-}
-
-/* Liga os eventos de clique dos chips e botões da etapa. */
-function ligarEventosEtapa(){
-  // chips de escolha única
-  ['f_sexo','f_ativ','f_obj'].forEach(id=>{
-    const c = $('#'+id); if(!c) return;
-    $$('.chip',c).forEach(chip=>chip.onclick=()=>{
-      $$('.chip',c).forEach(x=>x.classList.remove('sel'));
-      chip.classList.add('sel');
-    });
-  });
-  // chips de múltipla escolha (maus hábitos)
-  const maus = $('#f_maus');
-  if(maus) $$('.chip',maus).forEach(chip=>chip.onclick=()=>chip.classList.toggle('sel'));
-  // navegação
-  const btnV = $('#btnVoltar'); if(btnV) btnV.onclick=()=>{ coletarEtapa(false); etapaAtual--; renderEtapa(); };
-  $('#btnAvancar').onclick = avancarEtapa;
-}
-
-/* Coleta os dados preenchidos na etapa atual (valida se exigir). */
-function coletarEtapa(validar=true){
-  switch(etapaAtual){
-    case 0:
-      onb.nome = ($('#f_nome').value||'').trim();
-      if(validar && !onb.nome){ toast('Diz teu nome aí 😉'); return false; }
-      break;
-    case 1:
-      onb.idade = parseInt($('#f_idade').value);
-      const sx = $('.chip.sel',$('#f_sexo')); onb.sexo = sx?sx.dataset.v:null;
-      if(validar && (!onb.idade || onb.idade<10 || onb.idade>99)){ toast('Idade entre 10 e 99 🙏'); return false; }
-      if(validar && !onb.sexo){ toast('Escolhe o sexo biológico'); return false; }
-      break;
-    case 2:
-      onb.peso = parseFloat($('#f_peso').value);
-      onb.altura = parseFloat($('#f_altura').value);
-      if(validar && (!onb.peso || onb.peso<25 || onb.peso>250)){ toast('Peso válido, por favor ⚖️'); return false; }
-      if(validar && (!onb.altura || onb.altura<100 || onb.altura>230)){ toast('Altura em cm, por favor 📏'); return false; }
-      break;
-    case 3:
-      const a = $('.chip.sel',$('#f_ativ')); onb.ativ = a?a.dataset.v:null;
-      if(validar && !onb.ativ){ toast('Escolhe seu nível de atividade'); return false; }
-      break;
-    case 4:
-      onb.maus = $$('.chip.sel',$('#f_maus')).map(c=>c.dataset.v); // pode ser vazio
-      break;
-    case 5:
-      const o = $('.chip.sel',$('#f_obj')); onb.obj = o?o.dataset.v:null;
-      if(validar && !onb.obj){ toast('Qual seu objetivo? 🎯'); return false; }
-      break;
-  }
-  return true;
-}
-
-/* Avança para a próxima etapa ou finaliza o onboarding. */
-function avancarEtapa(){
-  if(!coletarEtapa(true)) return;
-  if(etapaAtual < ETAPAS.length-1){
-    etapaAtual++; renderEtapa();
-  }else{
-    criarUsuario();  // fim do onboarding
-  }
-}
-
-/* =========================================================
-   CÁLCULO DE METAS PERSONALIZADAS
-   ========================================================= */
-
-/* Fatores de atividade (usados no cálculo de calorias e passos). */
-const FATOR_ATIV = { sed:1.2, leve:1.375, mod:1.55, alto:1.725 };
-
-/* Calcula todas as metas a partir dos dados do onboarding. */
-function calcularMetas(d){
-  // --- IMC e classificação ---
-  const alturaM = d.altura/100;
-  const imc = +(d.peso/(alturaM*alturaM)).toFixed(1);
-  let classe, corImc;
-  if(imc < 18.5){ classe='Abaixo do peso'; corImc='#06b6d4'; }
-  else if(imc < 25){ classe='Saudável'; corImc='#22c55e'; }
-  else if(imc < 30){ classe='Sobrepeso'; corImc='#f59e0b'; }
-  else { classe='Obesidade'; corImc='#ef4444'; }
-
-  // --- Meta de água: 35ml por kg + 350ml se treina (mod/alto) ---
-  let agua = d.peso * 35;
-  if(d.ativ==='mod' || d.ativ==='alto') agua += 350;
-  agua = Math.round(agua/50)*50; // arredonda para 50ml
-
-  // --- Calorias: fórmula Mifflin-St Jeor ---
-  // Homem: 10*peso + 6.25*altura - 5*idade + 5
-  // Mulher: 10*peso + 6.25*altura - 5*idade - 161
-  let tmb = 10*d.peso + 6.25*d.altura - 5*d.idade + (d.sexo==='m'?5:-161);
-  let calorias = tmb * (FATOR_ATIV[d.ativ]||1.2);  // gasto total estimado
-  // ajuste pelo objetivo
-  if(d.obj==='perder') calorias *= 0.85;   // déficit ~15%
-  else if(d.obj==='ganhar') calorias *= 1.12; // superávit ~12%
-  calorias = Math.round(calorias/10)*10;
-
-  // --- Passos diários (6.000 a 12.000 conforme rotina) ---
-  const passosMap = { sed:6000, leve:8000, mod:10000, alto:12000 };
-  const passos = passosMap[d.ativ] || 6000;
-
-  // --- Minutos de exercício (20 a 45 min) ---
-  const minMap = { sed:20, leve:30, mod:40, alto:45 };
-  const exercicio = minMap[d.ativ] || 20;
-
-  // --- Refeições saudáveis sugeridas por dia ---
-  const refeicoes = 3;
-
-  return { imc, classe, corImc, agua, calorias, passos, exercicio, refeicoes };
-}
-
-/* =========================================================
-   CRIAÇÃO DO USUÁRIO + TELA DE RESUMO
-   ========================================================= */
-
-/* Monta o objeto de estado inicial e exibe o resumo de metas. */
-function criarUsuario(){
-  const metas = calcularMetas(onb);
-  S = {
-    perfil: { ...onb },
-    codigo: gerarCodigo(),
-    metas,
-    pontosTotais: 0,
-    criadoEm: hoje(),
-    // progresso do dia (reiniciado a cada novo dia)
-    dia: hoje(),
-    pontosHoje: 0,
-    aneis: { agua:0, passos:0, exercicio:0, refeicoes:0 },
-    habitos: {},        // id -> {feito:bool, streak:int, ultimoDia:'AAAA-MM-DD'}
-    desafioFeito: false,
-    streak: 0,          // ofensiva geral (dias ativos seguidos)
-    ultimoDiaAtivo: null,
-    amigos: [],         // [{codigo,nome,ava,pontos}]
+function quiz(){
+  if(jaRespondeu()){ return resultado(true); }
+  let h=`<h1>Descubra se você está saudável</h1><p class="hint">Leva uns 3 minutos. Ninguém é identificado. Você pode pular qualquer pergunta com “Não sei”, e perguntas puladas não entram nos gráficos.${sb?"":" <b>(Modo demonstração: dados salvos só neste aparelho.)</b>"}</p><form id="f" novalidate class="card">`;
+  h+=`<h2>Sobre você</h2><div class="two"><fieldset><legend><label for="turma">Turma</label></legend><select id="turma"><option value="">Escolha</option>${TURMAS.map(t=>`<option>${t}</option>`).join("")}</select></fieldset><fieldset><legend><label for="idade">Idade</label></legend><select id="idade"><option value="">Escolha</option>${Array.from({length:16},(_,i)=>`<option>${i+10}</option>`).join("")}</select></fieldset></div>`;
+  h+=`<fieldset><legend>Sexo</legend>${radios("sexo",["Masculino","Feminino"])}<p class="hint">Usado só para classificar o IMC corretamente na adolescência.</p></fieldset>`;
+  h+=`<div class="two"><fieldset><legend><label for="peso">Peso (kg)</label></legend><input id="peso" type="number" inputmode="decimal" step="0.1" placeholder="opcional"></fieldset><fieldset><legend><label for="alt">Altura (cm)</label></legend><input id="alt" type="number" inputmode="numeric" placeholder="opcional"></fieldset></div><p class="hint" style="margin-top:-8px">Peso e altura não são guardados. Só o IMC calculado.</p>`;
+  Q.forEach(q=>{ h+= q.g ? `<h2>${q.g}</h2>` : `<fieldset><legend>${q.t}</legend>${radios(q.k,q.o)}</fieldset>`; });
+  h+=`<h2>Hábitos</h2><fieldset><legend>Quais bons hábitos você pratica? (marque quantos quiser)</legend><div class="opts">${HABITOS.map(x=>`<label><input type="checkbox" name="habitos" value="${x}"><span>${x}</span></label>`).join("")}</div></fieldset>`;
+  h+=`<p id="msg" class="err" role="alert"></p><button class="btn" type="submit">Ver meu resultado</button></form>`;
+  main.innerHTML=h;
+  $("#f").onsubmit=async e=>{
+    e.preventDefault();
+    const msg=$("#msg"); msg.textContent="";
+    const r={device_id:deviceId(),turma:$("#turma").value,idade:+$("#idade").value};
+    if(!r.turma||!r.idade){ msg.textContent="Escolha sua turma e sua idade para continuar."; return; }
+    const val=n=>{const c=document.querySelector(`input[name=${n}]:checked`); return c&&c.value!==""?c.value:null;};
+    r.sexo=val("sexo");
+    Q.filter(q=>q.k).forEach(q=>{const v=val(q.k); r[q.k]=v==null?null:(q.n?+v:v);});
+    const hb=[...document.querySelectorAll("input[name=habitos]:checked")].map(i=>i.value); r.habitos=hb.length?hb:null;
+    const peso=parseFloat($("#peso").value), alt=parseFloat($("#alt").value);
+    if(($("#peso").value&&!(peso>=25&&peso<=250))||($("#alt").value&&!(alt>=120&&alt<=220))){ msg.textContent="Confira o peso (25 a 250 kg) e a altura (120 a 220 cm), ou deixe os dois em branco."; return; }
+    const im=calcIMC(peso,alt,r.idade,r.sexo); r.imc=im.imc??null; r.imc_cat=im.imc_cat??null;
+    const sc=pontuar(r); r.pct_saudavel=sc.pct;
+    const b=e.submitter; b.disabled=true; b.textContent="Enviando...";
+    try{ await salvar(r); }
+    catch(err){
+      if(err&&err.code==="23505"){ setCookie("viva_ok","1"); msg.textContent="Este aparelho já respondeu a pesquisa. Obrigado!"; }
+      else msg.textContent="Não foi possível enviar. Verifique a internet e tente de novo.";
+      b.disabled=false; b.textContent="Ver meu resultado"; return;
+    }
+    setCookie("viva_ok","1");
+    localStorage.setItem("viva_res",JSON.stringify({pct:sc.pct,it:sc.it,n:sc.n,imc:r.imc,cat:r.imc_cat,kg:im.faixaKg||null,idade:r.idade,turma:r.turma}));
+    go("resultado");
   };
-  // inicializa estrutura de hábitos
-  habitosDoUsuario().forEach(h=>{ S.habitos[h.id] = {feito:false, streak:0, ultimoDia:null}; });
-  salvar();
-  mostrarResumo(metas);
 }
 
-/* Devolve a lista completa de hábitos do usuário (eliminar + cultivar). */
-function habitosDoUsuario(){
-  const eliminar = (S?S.perfil.maus:onb.maus||[]).map(id=>{
-    const h = MAUS_HABITOS.find(x=>x.id===id);
-    return { id:'elim_'+id, nome:'Sem '+h.nome.toLowerCase(), emj:h.emj, sub:'Fique longe hoje', pts:15, tipo:'elim' };
-  });
-  const cultivar = BONS_HABITOS.map(h=>({ ...h, pts:10, tipo:'bom' }));
-  return [...eliminar, ...cultivar];
-}
-
-/* Exibe a tela de resumo das metas antes de entrar no app. */
-function mostrarResumo(m){
-  $('#onboarding').style.display='none';
-  const r = $('#resumo');
-  r.style.display='block';
-  r.innerHTML = `
-    <div style="text-align:center;margin-bottom:20px;">
-      <div style="font-size:50px;">🎉</div>
-      <div class="titulo">Tudo pronto, ${S.perfil.nome}!</div>
-      <div class="subtitulo">Essas são suas metas personalizadas 👇</div>
-    </div>
-    <div class="resumo-item" style="border-color:${m.corImc}66;">
-      <div class="emj">🧍</div>
-      <div class="t"><h4>Seu IMC</h4><b>${m.imc} · <span style="color:${m.corImc}">${m.classe}</span></b></div>
-    </div>
-    <div class="resumo-item"><div class="emj">💧</div><div class="t"><h4>Água por dia</h4><b>${(m.agua/1000).toFixed(1)} L</b></div></div>
-    <div class="resumo-item"><div class="emj">🔥</div><div class="t"><h4>Calorias por dia</h4><b>${m.calorias} kcal</b></div></div>
-    <div class="resumo-item"><div class="emj">🚶</div><div class="t"><h4>Passos por dia</h4><b>${m.passos.toLocaleString('pt-BR')}</b></div></div>
-    <div class="resumo-item"><div class="emj">⏱️</div><div class="t"><h4>Exercício por dia</h4><b>${m.exercicio} min</b></div></div>
-    <button class="btn" id="btnEntrar" style="margin-top:16px;">Começar minha jornada 🚀</button>
-  `;
-  $('#btnEntrar').onclick = entrarApp;
-}
-
-/* =========================================================
-   ENTRADA NO APP + CONTROLE DE NOVO DIA
-   ========================================================= */
-
-/* Mostra o app principal e renderiza tudo. */
-function entrarApp(){
-  $('#onboarding').style.display='none';
-  $('#resumo').style.display='none';
-  $('#principal').style.display='block';
-  verificarNovoDia();
-  renderTudo();
-}
-
-/* Sorteia o desafio global do dia de forma determinística:
-   todos os usuários veem o MESMO desafio no mesmo dia, pois
-   o índice é derivado do número de dias desde 1970. */
-function desafioDoDia(){
-  const dias = Math.floor(Date.now()/86400000);
-  return DESAFIOS[dias % DESAFIOS.length];
-}
-
-/* Verifica se virou o dia; se sim, reinicia progresso diário
-   e atualiza as ofensivas (streaks). */
-function verificarNovoDia(){
-  const h = hoje();
-  if(S.dia === h) return; // ainda é o mesmo dia
-
-  // Para cada hábito: se não foi feito ontem, zera a ofensiva.
-  const ontem = new Date(Date.now()-86400000).toISOString().slice(0,10);
-  habitosDoUsuario().forEach(def=>{
-    const hb = S.habitos[def.id] || {feito:false,streak:0,ultimoDia:null};
-    if(hb.ultimoDia !== ontem) hb.streak = 0; // pulou um dia → zera 🔥
-    hb.feito = false;
-    S.habitos[def.id] = hb;
-  });
-
-  // Ofensiva geral: se o último dia ativo não foi ontem, zera.
-  if(S.ultimoDiaAtivo !== ontem) S.streak = 0;
-
-  // Reinicia o progresso do dia.
-  S.dia = h;
-  S.pontosHoje = 0;
-  S.aneis = { agua:0, passos:0, exercicio:0, refeicoes:0 };
-  S.desafioFeito = false;
-  salvar();
-}
-
-/* Soma pontos (total + do dia) e registra atividade do dia. */
-function ganharPontos(qtd){
-  S.pontosTotais += qtd;
-  S.pontosHoje += qtd;
-  registrarAtividade();
-  salvar();
-}
-
-/* Marca que o usuário esteve ativo hoje e atualiza a ofensiva geral. */
-function registrarAtividade(){
-  const h = hoje();
-  if(S.ultimoDiaAtivo === h) return; // já contou hoje
-  const ontem = new Date(Date.now()-86400000).toISOString().slice(0,10);
-  S.streak = (S.ultimoDiaAtivo === ontem) ? S.streak+1 : 1;
-  S.ultimoDiaAtivo = h;
-}
-
-/* =========================================================
-   RENDERIZAÇÃO DAS TELAS
-   ========================================================= */
-
-/* Renderiza todas as telas de uma vez (chamado ao abrir / ao agir). */
-function renderTudo(){
-  renderTopbar();
-  renderInicio();
-  renderPlano();
-  renderCompetir();
-  renderAmigos();
-  renderPerfil();
-}
-
-/* --- Barra superior com estatísticas --- */
-function renderTopbar(){
-  $('#tbNome').textContent = S.perfil.nome;
-  $('#tbTotal').textContent = S.pontosTotais;
-  $('#tbHoje').textContent = S.pontosHoje;
-  $('#tbStreak').textContent = '🔥'+S.streak;
-}
-
-/* --- Anel de progresso SVG --- */
-function svgAnel(pct, cor){
-  const r=40, c=2*Math.PI*r, off=c*(1-Math.min(pct,1));
-  return `<svg width="92" height="92" viewBox="0 0 92 92">
-    <circle cx="46" cy="46" r="${r}" stroke="#2e2550" stroke-width="8" fill="none"/>
-    <circle cx="46" cy="46" r="${r}" stroke="${cor}" stroke-width="8" fill="none"
-      stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"
-      style="transition:stroke-dashoffset .5s ease"/>
-  </svg>`;
-}
-
-/* --- Tela Início: desafio + anéis de meta --- */
-function renderInicio(){
-  // desafio global
-  $('#desafioTxt').textContent = desafioDoDia();
-  const bd = $('#btnDesafio');
-  if(S.desafioFeito){ bd.textContent='Desafio concluído ✅'; bd.disabled=true; }
-  else { bd.textContent='Completar desafio 🎯'; bd.disabled=false; }
-
-  // anéis (quantidade atual / meta)
-  const m = S.metas, a = S.aneis;
-  const defs = [
-    {id:'agua',      emj:'💧', nome:'Água',      cor:'#22d3ee', meta:Math.round(m.agua/250), unid:'copos', passo:1, mostra:v=>v+'/'+Math.round(m.agua/250)+' copos'},
-    {id:'passos',    emj:'🚶', nome:'Passos',    cor:'#8b5cf6', meta:m.passos, unid:'passos', passo:1000, mostra:v=>v.toLocaleString('pt-BR')},
-    {id:'exercicio', emj:'⏱️', nome:'Exercício', cor:'#22c55e', meta:m.exercicio, unid:'min', passo:5, mostra:v=>v+'/'+m.exercicio+' min'},
-    {id:'refeicoes', emj:'🥗', nome:'Refeições', cor:'#f59e0b', meta:m.refeicoes, unid:'ref', passo:1, mostra:v=>v+'/'+m.refeicoes},
-  ];
-  $('#aneisWrap').innerHTML = defs.map(d=>{
-    const v = a[d.id]||0;
-    const pct = v/d.meta;
-    return `<div class="anel-card">
-      <div class="anel">${svgAnel(pct,d.cor)}
-        <div class="valor"><span class="emj">${d.emj}</span><span class="pct">${Math.round(pct*100)}%</span></div>
-      </div>
-      <h4>${d.nome}</h4>
-      <div class="meta-txt">${d.mostra(v)}</div>
-      <div class="anel-ctrl">
-        <button data-anel="${d.id}" data-delta="${-d.passo}">−</button>
-        <button class="add" data-anel="${d.id}" data-delta="${d.passo}">+</button>
-      </div>
-    </div>`;
-  }).join('');
-  // eventos dos botões +/-
-  $$('#aneisWrap .anel-ctrl button').forEach(b=>b.onclick=()=>ajustarAnel(b.dataset.anel, +b.dataset.delta, defs));
-}
-
-/* Ajusta a quantidade de um anel e pontua ao completar a meta. */
-function ajustarAnel(id, delta, defs){
-  const def = defs.find(d=>d.id===id);
-  const antes = S.aneis[id]||0;
-  let novo = Math.max(0, antes+delta);
-  const estavaCompleto = antes >= def.meta;
-  S.aneis[id] = novo;
-  const agoraCompleto = novo >= def.meta;
-  // pontua +20 ao completar a meta pela primeira vez no dia
-  if(!estavaCompleto && agoraCompleto){
-    ganharPontos(20);
-    toast('Meta de '+def.nome+' batida! +20 🎉','pts');
-  } else { salvar(); }
-  renderInicio(); renderTopbar();
-}
-
-/* --- Botão do desafio global --- */
-$('#btnDesafio').onclick = ()=>{
-  if(S.desafioFeito) return;
-  S.desafioFeito = true;
-  ganharPontos(25);
-  toast('Desafio do dia concluído! +25 🌍','pts');
-  renderInicio(); renderTopbar(); renderCompetir();
-};
-
-/* --- Tela Plano: hábitos para eliminar e cultivar --- */
-function renderPlano(){
-  const todos = habitosDoUsuario();
-  const elim = todos.filter(h=>h.tipo==='elim');
-  const bons = todos.filter(h=>h.tipo==='bom');
-
-  const wrapE = $('#habitosEliminar');
-  if(elim.length===0){
-    wrapE.innerHTML = '<p class="mini" style="padding:4px 2px;">Você não marcou maus hábitos — mandou bem! 🙌</p>';
-  } else {
-    wrapE.innerHTML = elim.map(cardHabito).join('');
+/* ---------- resultado pessoal ---------- */
+async function resultado(jaFez){
+  const s=JSON.parse(localStorage.getItem("viva_res")||"null");
+  if(!s){ main.innerHTML=`<div class="card"><h1>Este aparelho já respondeu</h1><p>Cada aparelho responde uma vez. Obrigado por participar!</p><button class="btn" id="v">Ver resultados</button></div>`; $("#v").onclick=()=>go("home"); return; }
+  const forte=[...s.it].sort((a,b)=>b.s-a.s).filter(x=>x.s>=80).slice(0,2);
+  const fraco=[...s.it].filter(x=>x.dica&&x.s<70).sort((a,b)=>a.s-b.s).slice(0,3);
+  let h=`<h1>Seu resultado</h1>`;
+  if(jaFez) h+=`<p class="hint">Este aparelho já respondeu. Aqui está o seu resultado salvo.</p>`;
+  if(s.pct==null) h+=`<div class="card"><p>Você respondeu poucas perguntas, então não dá para estimar. Mesmo assim, obrigado por participar!</p></div>`;
+  else{
+    const faixaTxt=s.pct>=80?"Muito bom!":s.pct>=60?"Bom, com espaço para melhorar":s.pct>=40?"Atenção: vale ajustar alguns hábitos":"Vale cuidar mais de você e conversar com um profissional";
+    h+=`<div class="card warn"><p style="margin:0">Estimativa de hábitos saudáveis</p><div class="big">${s.pct}%</div><div class="bar" role="img" aria-label="${s.pct} por cento"><i style="width:${s.pct}%"></i></div><p><b>${faixaTxt}</b></p><p class="hint" id="comp"></p><p class="hint">Baseada em ${s.n} respostas, comparadas com recomendações da OMS e do Ministério da Saúde. É uma estimativa educativa, não um diagnóstico.</p></div>`;
   }
-  $('#habitosCultivar').innerHTML = bons.map(cardHabito).join('');
-
-  // liga os botões de check
-  $$('#tela-plano .check-btn').forEach(b=>b.onclick=()=>toggleHabito(b.dataset.id));
-}
-
-/* Monta o card de um hábito. */
-function cardHabito(def){
-  const hb = S.habitos[def.id] || {feito:false,streak:0};
-  const fogo = hb.streak>0 ? `<span class="streak-badge">🔥${hb.streak}</span>` : '';
-  return `<div class="habito ${hb.feito?'feito':''}">
-    <button class="check-btn ${hb.feito?'on':''}" data-id="${def.id}">${hb.feito?'✔️':def.emj}</button>
-    <div class="info">
-      <h4>${def.nome}</h4>
-      <div class="sub">${def.sub} · <span class="pts">+${def.pts} pts</span></div>
-    </div>
-    ${fogo}
-  </div>`;
-}
-
-/* Marca/desmarca um hábito e atualiza ofensiva + pontos. */
-function toggleHabito(id){
-  const def = habitosDoUsuario().find(h=>h.id===id);
-  const hb = S.habitos[id] || {feito:false,streak:0,ultimoDia:null};
-  const h = hoje();
-  const ontem = new Date(Date.now()-86400000).toISOString().slice(0,10);
-
-  if(!hb.feito){
-    // marcando como feito
-    hb.feito = true;
-    // ofensiva: continua se foi feito ontem, senão recomeça em 1
-    hb.streak = (hb.ultimoDia === ontem) ? hb.streak+1 : 1;
-    hb.ultimoDia = h;
-    S.habitos[id] = hb;
-    ganharPontos(def.pts);
-    toast(def.nome+' ✓ +'+def.pts+' pts 🔥'+hb.streak,'pts');
-  } else {
-    // desmarcando (desfaz pontos e ofensiva do dia)
-    hb.feito = false;
-    hb.streak = Math.max(0, hb.streak-1);
-    hb.ultimoDia = hb.streak>0 ? ontem : null;
-    S.habitos[id] = hb;
-    S.pontosTotais = Math.max(0, S.pontosTotais-def.pts);
-    S.pontosHoje = Math.max(0, S.pontosHoje-def.pts);
-    salvar();
+  if(s.imc){
+    h+=`<div class="card"><h2>Seu IMC: ${String(s.imc).replace(".",",")}${s.cat?` (${s.cat})`:""}</h2>`;
+    h+= s.kg ? `<p>Para a sua altura, a faixa de peso de referência fica entre <b>${s.kg[0]} e ${s.kg[1]} kg</b>.</p>` : `<p>Informe também o sexo para ver a classificação.</p>`;
+    h+=`<p class="hint">IMC é só uma referência e não mede músculo, ossos nem saúde mental. ${s.idade<19?"Na adolescência o corpo muda rápido, então a faixa é aproximada. ":""}Se tiver dúvidas sobre peso ou alimentação, converse com um profissional de saúde.</p></div>`;
   }
-  renderPlano(); renderTopbar(); renderCompetir();
+  if(forte.length) h+=`<div class="card"><h2>Seus pontos fortes</h2><ul>${forte.map(x=>`<li>${x.nome}</li>`).join("")}</ul></div>`;
+  if(fraco.length) h+=`<div class="card"><h2>Para melhorar</h2><ul>${fraco.map(x=>`<li><b>${x.nome}:</b> ${x.dica}</li>`).join("")}</ul></div>`;
+  h+=`<div class="card"><p>Se estiver passando por um momento difícil, ligue para o <b>CVV: 188</b> (24 h, gratuito).</p></div><button class="btn" id="v">Ver os gráficos da pesquisa</button>`;
+  main.innerHTML=h; $("#v").onclick=()=>go("home");
+  if(s.pct!=null) try{ const d=(await lerTudo()).map(x=>x.pct_saudavel).filter(x=>x!=null); if(d.length>1) $("#comp").textContent=`Média dos participantes: ${Math.round(d.reduce((a,b)=>a+b,0)/d.length)}%.`; }catch(e){}
 }
 
-/* --- Tela Competir: pódio + ranking --- */
-function renderCompetir(){
-  let lista;
-  if(CLOUD.pronto && CLOUD.ranking.length){
-    // ===== RANKING REAL (usuários de verdade vindos do Firestore) =====
-    const meuCod = S.codigo;
-    const amigosCods = new Set(S.amigos.map(a=>a.codigo));
-    lista = CLOUD.ranking.map(u=>({
-      nome:   (u.codigo===meuCod) ? (S.perfil.nome+' (você)') : (u.nome||'Anônimo'),
-      ava:    u.ava || '🙂',
-      pontos: u.pontos || 0,
-      eu:     u.codigo===meuCod,
-      amigo:  amigosCods.has(u.codigo),
-    }));
-    // garante que você apareça mesmo antes do primeiro sync
-    if(!lista.some(u=>u.eu))
-      lista.push({ nome:S.perfil.nome+' (você)', ava:avatarUser(), pontos:S.pontosTotais, eu:true });
-  } else {
-    // ===== MODO OFFLINE: bots fictícios + você + amigos locais =====
-    lista = BOTS.map(b=>({ nome:b.nome, ava:b.ava, pontos:b.base, rival:b.rival }));
-    lista.push({ nome:S.perfil.nome+' (você)', ava:avatarUser(), pontos:S.pontosTotais, eu:true });
-    S.amigos.forEach(a=>lista.push({ nome:a.nome, ava:a.ava, pontos:a.pontos, amigo:true }));
-  }
-  // ordena por pontos (desc)
-  lista.sort((a,b)=>b.pontos-a.pontos);
+/* ---------- gráficos ---------- */
+let charts=[], DADOS=[];
+async function home(){
+  main.innerHTML=`<h1>Como os jovens estão?</h1><p id="load">Carregando...</p>`;
+  try{ DADOS=await lerTudo(); }catch(e){ main.innerHTML+=`<p class="err">Erro ao carregar os dados.</p>`; return; }
+  main.innerHTML=`<h1>Como os jovens estão?</h1><p class="hint">Dados reais das respostas. Respostas em branco não entram nos cálculos.</p>
+  <div class="card"><div class="two"><div><label for="ft">Turma</label><select id="ft"><option value="">Todas</option>${TURMAS.map(t=>`<option>${t}</option>`).join("")}</select></div><div><label for="fi">Idade</label><select id="fi"><option value="">Todas</option>${FAIXAS.map(f=>`<option>${f[0]}</option>`).join("")}</select></div></div></div>
+  <div id="out"></div>
+  <div class="card warn"><h2>E você?</h2><p>Responda e receba uma estimativa de quão saudável está.</p><button class="btn" id="cta">${jaRespondeu()?"Ver meu resultado":"Descobrir se estou saudável"}</button><button class="btn sec" id="csv">Baixar dados (CSV)</button></div>`;
+  $("#ft").onchange=$("#fi").onchange=desenhar; $("#csv").onclick=csv; $("#cta").onclick=()=>go(jaRespondeu()?"resultado":"quiz"); desenhar();
+}
+const vals=(a,k)=>a.map(x=>x[k]).filter(v=>v!=null);
+const media=(a,k)=>{const v=vals(a,k); return v.length?v.reduce((s,x)=>s+x,0)/v.length:null;};
+const pct=(n,t)=>t?Math.round(n*100/t):0;
+const fmt=(v,d=1)=>v==null?"—":v.toFixed(d).replace(".",",");
+function conta(a,fn,ordem){ const m={}; a.forEach(x=>{const k=fn(x); if(k!=null) m[k]=(m[k]||0)+1;}); const ks=ordem||Object.keys(m); return {l:ks.map(String),v:ks.map(k=>m[k]||0)}; }
 
-  // --- Pódio (top 3) ---
-  const top = lista.slice(0,3);
-  const ordem = [1,0,2]; // 2º, 1º, 3º (visual)
-  const med = ['🥇','🥈','🥉'];
-  $('#podioWrap').innerHTML = ordem.map(i=>{
-    const u = top[i]; if(!u) return '';
-    return `<div class="pos p${i+1}">
-      <div class="ava">${u.ava}</div>
-      <div class="barra">
-        <div class="medalha">${med[i]}</div>
-        <div class="nome">${u.nome.replace(' (você)','')}</div>
-        <div class="pt">${u.pontos}</div>
-      </div>
-    </div>`;
-  }).join('');
+function desenhar(){
+  charts.forEach(c=>c.destroy()); charts=[];
+  const t=$("#ft").value,i=$("#fi").value;
+  const a=DADOS.filter(x=>(!t||x.turma===t)&&(!i||faixa(x.idade)===i));
+  const out=$("#out");
+  if(!a.length){ out.innerHTML=`<div class="card"><p>Ainda não há respostas${t||i?" para este filtro":""}. Seja o primeiro com o botão abaixo.</p></div>`; return; }
+  const n=a.length, usa=a.filter(x=>x.cigarro||x.maconha), usam=usa.filter(x=>["Às vezes","Com frequência"].includes(x.cigarro)||["Às vezes","Com frequência"].includes(x.maconha)).length;
+  const comImc=a.filter(x=>x.imc_cat), acima=comImc.filter(x=>x.imc_cat==="Sobrepeso"||x.imc_cat==="Obesidade").length;
+  const ids=["faixa","pct","imc","humor","sono","atividade","agua","telas","subs","habitos","medias"];
+  out.innerHTML=`<div class="stats">
+   <div class="stat"><b>${n}</b>respostas</div>
+   <div class="stat"><b>${media(a,"pct_saudavel")==null?"—":Math.round(media(a,"pct_saudavel"))+"%"}</b>índice de hábitos saudáveis</div>
+   <div class="stat"><b>${comImc.length?pct(acima,comImc.length)+"%":"—"}</b>com sobrepeso ou obesidade</div>
+   <div class="stat"><b>${usa.length?pct(usam,usa.length)+"%":"—"}</b>usam cigarro ou maconha às vezes ou mais</div></div>`+
+   ids.map(id=>`<div class="card"><h2 id="h-${id}"></h2><div class="chart"><canvas id="c-${id}" role="img" aria-labelledby="h-${id}" aria-describedby="d-${id}"></canvas></div><p class="txt" id="d-${id}"></p></div>`).join("");
 
-  // --- Lista completa ---
-  $('#rankLista').innerHTML = lista.map((u,i)=>{
-    const tag = u.eu?'' : u.rival?'<span class="tag-rival">RIVAL</span>' : u.amigo?'<span class="tag-amigo">AMIGO</span>':'';
-    return `<div class="rank-item ${u.eu?'eu':''}">
-      <div class="num">${i+1}</div>
-      <div class="ava-s">${u.ava}</div>
-      <div class="n">${u.nome.replace(' (você)','')} ${tag}</div>
-      <div class="p">${u.pontos}</div>
-    </div>`;
-  }).join('');
+  const cor=getComputedStyle(document.documentElement).getPropertyValue("--mut").trim();
+  const mk=(id,titulo,tipo,labels,ds,o={})=>{
+    $("#h-"+id).textContent=titulo;
+    const d0=ds[0].data,tot=d0.reduce((s,x)=>s+x,0);
+    $("#d-"+id).textContent="Resumo em texto: "+(ds.length===1
+      ? labels.map((l,j)=>`${l}: ${o.pm?d0[j]+" ("+pct(d0[j],tot)+"%)":fmt(d0[j])}`).join("; ")
+      : ds.map(d=>d.label+" – "+labels.map((l,j)=>`${l}: ${fmt(d.data[j],0)}%`).join(", ")).join(". "))+".";
+    charts.push(new Chart($("#c-"+id),{type:tipo,data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:ds.length>1,labels:{color:cor}}},
+      scales:{x:{stacked:!!o.stack,ticks:{color:cor}},y:{stacked:!!o.stack,beginAtZero:true,max:o.max,ticks:{color:cor,precision:0}}}}}));
+  };
+  const barra=(id,titulo,c)=>mk(id,titulo,"bar",c.l,[{label:"Pessoas",data:c.v,backgroundColor:COR[0]}],{pm:1});
+  const turmasPresentes=TURMAS.filter(x=>a.some(r=>r.turma===x));
+
+  barra("faixa","Respostas por faixa etária",conta(a,x=>faixa(x.idade),FAIXAS.map(f=>f[0])));
+  mk("pct","Índice médio de hábitos saudáveis por turma (0 a 100)","bar",turmasPresentes,[{label:"Índice",data:turmasPresentes.map(x=>media(a.filter(r=>r.turma===x),"pct_saudavel")||0),backgroundColor:COR[1]}],{max:100});
+  mk("imc","IMC por turma (% de cada classificação)","bar",turmasPresentes,CATS.map((c,j)=>({label:c,backgroundColor:[COR[5],COR[1],COR[2],COR[3]][j],
+     data:turmasPresentes.map(x=>{const g=a.filter(r=>r.turma===x&&r.imc_cat);return pct(g.filter(r=>r.imc_cat===c).length,g.length);})})),{stack:1,max:100});
+  barra("humor","Humor (1 = muito baixo, 5 = ótimo)",conta(a,x=>x.humor,[1,2,3,4,5]));
+  barra("sono","Horas de sono por noite",conta(a,x=>x.sono,["Menos de 6h","6 a 7h","8 a 9h","Mais de 9h"]));
+  barra("atividade","Dias de atividade física por semana",conta(a,x=>x.atividade,[0,1,2,3,4,5,6,7]));
+  barra("agua","Consumo de água por dia",conta(a,x=>x.agua,["Menos de 1 L","1 a 2 L","Mais de 2 L"]));
+  barra("telas","Tempo de tela por dia",conta(a,x=>x.telas,["Até 2h","3 a 4h","5 a 7h","8h ou mais"]));
+  mk("subs","Cigarro, maconha e álcool (% de quem respondeu)","bar",FREQ,[["cigarro","Cigarro/vape"],["maconha","Maconha"],["alcool","Álcool"]].map(([k,nm],j)=>{
+     const c=conta(a,x=>x[k],FREQ),tot=c.v.reduce((s,x)=>s+x,0); return {label:nm,backgroundColor:[COR[0],COR[2],COR[3]][j],data:c.v.map(v=>pct(v,tot))};}),{max:100});
+  const hc={}; a.forEach(x=>(x.habitos||[]).forEach(h=>hc[h]=(hc[h]||0)+1)); const hk=HABITOS.filter(h=>hc[h]);
+  barra("habitos","Bons hábitos mais praticados",{l:hk,v:hk.map(h=>hc[h])});
+  mk("medias","Médias de saúde física, humor e estresse (1 a 5)","bar",["Saúde física","Humor","Estresse"],[{label:"Média",data:["saude_fisica","humor","estresse"].map(k=>media(a,k)||0),backgroundColor:[COR[1],COR[0],COR[3]]}],{max:5});
 }
 
-/* Avatar emoji do usuário (baseado no objetivo). */
-function avatarUser(){
-  return { perder:'🔥', manter:'⭐', ganhar:'💪' }[S.perfil.obj] || '🙂';
+function csv(){
+  const cols=["turma","idade","sexo","imc","imc_cat","saude_fisica","humor","estresse","sono","atividade","agua","frutas","telas","cigarro","maconha","alcool","habitos","pct_saudavel"];
+  const l=[cols.join(",")].concat(DADOS.map(r=>cols.map(c=>`"${String(r[c]==null?"":Array.isArray(r[c])?r[c].join("; "):r[c]).replace(/"/g,'""')}"`).join(",")));
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([l.join("\n")],{type:"text/csv"})); a.download="viva-mais-dados.csv"; a.click();
 }
 
-/* --- Tela Amigos: código próprio, adicionar e listar --- */
-function renderAmigos(){
-  $('#meuCodigo').textContent = S.codigo;
-  // Atualiza os pontos dos amigos com os dados ao vivo do ranking (se houver).
-  if(CLOUD.pronto && CLOUD.ranking.length){
-    S.amigos.forEach(a=>{
-      const r = CLOUD.ranking.find(u=>u.codigo===a.codigo);
-      if(r){ a.pontos = r.pontos||0; a.nome = r.nome||a.nome; a.ava = r.ava||a.ava; }
-    });
-  }
-  const l = $('#listaAmigos');
-  if(S.amigos.length===0){
-    l.innerHTML = '<p class="mini" style="padding:4px 2px;">Nenhum amigo ainda. Compartilhe seu código! 🙌</p>';
-  } else {
-    l.innerHTML = S.amigos.map((a,i)=>`
-      <div class="amigo-item">
-        <div class="ava-s" style="width:40px;height:40px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:20px;">${a.ava}</div>
-        <div><div style="font-weight:800;font-size:14px;">${a.nome}</div><div class="mini">${a.codigo} · ${a.pontos} pts</div></div>
-        <button class="x" data-i="${i}">✕</button>
-      </div>`).join('');
-    $$('#listaAmigos .x').forEach(b=>b.onclick=()=>removerAmigo(+b.dataset.i));
-  }
+/* ---------- sobre ---------- */
+function info(){
+  main.innerHTML=`<h1>Sobre o Viva+</h1>
+  <div class="card"><h2>Para que serve</h2><p>O Viva+ é uma pesquisa sobre bem-estar e qualidade de vida de jovens. As respostas viram gráficos de saúde física, saúde mental e hábitos, e cada pessoa recebe uma estimativa de hábitos saudáveis.</p></div>
+  <div class="card"><h2>Privacidade</h2><p>A pesquisa é anônima. Não coletamos nome, e-mail, telefone, peso nem altura. Guardamos turma, idade, sexo, IMC calculado e as respostas, sempre mostradas somadas. Um código aleatório fica no aparelho só para evitar respostas repetidas.</p></div>
+  <div class="card warn"><h2>Precisa conversar?</h2><p>Este site é educativo e não substitui médico, psicólogo ou nutricionista. Se você está passando por um momento difícil, ligue para o <b>CVV: 188</b> (24 horas, gratuito) ou procure um adulto de confiança.</p></div>
+  <div class="card"><h2>Metodologia e fontes</h2><p>As perguntas se inspiram na PeNSE (IBGE) e no Vigitel (Ministério da Saúde). O IMC de adultos usa os cortes da OMS; para menores de 19 anos usa uma estimativa das curvas de IMC por idade da OMS (2007). A estimativa de hábitos compara cada resposta com recomendações como 60 minutos diários de atividade e 8 a 10 horas de sono para adolescentes, e dá mais peso a atividade, sono, humor e substâncias. Perguntas em branco ficam de fora. Os dados representam só quem respondeu e não toda a população.</p></div>`;
 }
 
-/* Copiar o próprio código. */
-$('#btnCopiar').onclick = ()=>{
-  navigator.clipboard?.writeText(S.codigo).catch(()=>{});
-  toast('Código copiado! 📋','ok');
-};
-
-/* Adicionar amigo pelo código.
-   [BACKEND] com Firebase conectado, busca o usuário REAL pelo código.
-   Sem backend, cai no modo simulado (perfil aleatório local). */
-$('#btnAddAmigo').onclick = async ()=>{
-  let cod = ($('#inpAmigo').value||'').trim().toUpperCase();
-  if(!cod.startsWith('VIVA-')) cod = 'VIVA-'+cod.replace('VIVA-','');
-  if(!/^VIVA-[A-Z0-9]{4}$/.test(cod)){ toast('Código inválido 🤔'); return; }
-  if(cod===S.codigo){ toast('Esse é o seu próprio código 😄'); return; }
-  if(S.amigos.some(a=>a.codigo===cod)){ toast('Vocês já são amigos 😉'); return; }
-
-  if(CLOUD.pronto && CLOUD.api){
-    // ----- BUSCA REAL no Firestore -----
-    toast('Procurando... 🔍');
-    let achado = null;
-    try{ achado = await CLOUD.api.buscarPorCodigo(cod); }catch(e){ toast('Erro de conexão 📡'); return; }
-    if(!achado){ toast('Ninguém com esse código 🙅'); return; }
-    S.amigos.push({ codigo:achado.codigo, nome:achado.nome, ava:achado.ava, pontos:achado.pontos, uid:achado.uid });
-  } else {
-    // ----- MODO OFFLINE: simulação local -----
-    const avatars=['😎','🌸','🚀','⚡','🌟','🎯','🦄','🏀'];
-    const nomes=['Alex','Sam','Jô','Kai','Nina','Lu','Max','Vic'];
-    S.amigos.push({
-      codigo:cod,
-      nome:nomes[Math.floor(Math.random()*nomes.length)],
-      ava:avatars[Math.floor(Math.random()*avatars.length)],
-      pontos:Math.floor(Math.random()*300)+50,
-    });
-  }
-  salvar();
-  $('#inpAmigo').value='';
-  toast('Amigo adicionado! 🎉','ok');
-  renderAmigos(); renderCompetir();
-};
-
-/* Remover um amigo da lista. */
-function removerAmigo(i){
-  S.amigos.splice(i,1);
-  salvar();
-  toast('Amigo removido');
-  renderAmigos(); renderCompetir();
-}
-
-/* --- Tela Perfil --- */
-function renderPerfil(){
-  const p = S.perfil, m = S.metas;
-  $('#perfilAva').textContent = avatarUser();
-  $('#perfilNome').textContent = p.nome;
-  const objTxt = { perder:'Perder peso 🔥', manter:'Manter-se saudável ⚖️', ganhar:'Ganhar massa 💪' }[p.obj];
-  $('#perfilObj').textContent = objTxt;
-  const imcEl = $('#perfilImc');
-  imcEl.textContent = 'IMC '+m.imc+' · '+m.classe;
-  imcEl.style.background = m.corImc+'33';
-  imcEl.style.color = m.corImc;
-
-  const sexoTxt = p.sexo==='m'?'Masculino':'Feminino';
-  $('#perfilDados').innerHTML = `
-    <div class="dado"><div class="k">Idade</div><div class="v">${p.idade} anos</div></div>
-    <div class="dado"><div class="k">Sexo</div><div class="v">${sexoTxt}</div></div>
-    <div class="dado"><div class="k">Peso</div><div class="v">${p.peso} kg</div></div>
-    <div class="dado"><div class="k">Altura</div><div class="v">${p.altura} cm</div></div>`;
-  $('#perfilMetas').innerHTML = `
-    <div class="dado"><div class="k">💧 Água</div><div class="v">${(m.agua/1000).toFixed(1)} L</div></div>
-    <div class="dado"><div class="k">🔥 Calorias</div><div class="v">${m.calorias}</div></div>
-    <div class="dado"><div class="k">🚶 Passos</div><div class="v">${m.passos.toLocaleString('pt-BR')}</div></div>
-    <div class="dado"><div class="k">⏱️ Exercício</div><div class="v">${m.exercicio} min</div></div>`;
-}
-
-/* Recomeçar do zero (apaga tudo). */
-$('#btnReset').onclick = ()=>{
-  if(confirm('Tem certeza? Isso apaga todos os seus dados e progresso.')){
-    localStorage.removeItem(KEY);
-    location.reload();
-  }
-};
-
-/* =========================================================
-   NAVEGAÇÃO INFERIOR
-   ========================================================= */
-$$('.nav-btn').forEach(btn=>btn.onclick=()=>{
-  $$('.nav-btn').forEach(b=>b.classList.remove('ativo'));
-  btn.classList.add('ativo');
-  $$('.tela').forEach(t=>t.classList.remove('ativa'));
-  $('#tela-'+btn.dataset.tela).classList.add('ativa');
-});
-
-/* =========================================================
-   INICIALIZAÇÃO
-   -----------------------------------------------------------
-   Se já existe usuário salvo → entra direto no app.
-   Caso contrário → inicia o onboarding.
-   [BACKEND] aqui também seria o ponto de autenticação
-   (login via Firebase Auth / Supabase Auth) e carregamento
-   do estado remoto do usuário.
-   ========================================================= */
-function init(){
-  S = carregar();
-  if(S && S.perfil && S.perfil.nome){
-    entrarApp();            // usuário existente
-  } else {
-    etapaAtual = 0;
-    renderEtapa();          // novo usuário → onboarding
-  }
-}
-init();
-</script>
-
-<!-- =========================================================
-     ADAPTADOR FIREBASE (backend real)
-     -----------------------------------------------------------
-     • Só ativa se window.VIVA_FIREBASE.apiKey estiver preenchido.
-     • Usa login anônimo (cada aparelho vira um usuário único).
-     • Grava seu perfil público em 'usuarios/{uid}' e escuta o
-       ranking global (top 50) em tempo real.
-     • Carregado via CDN oficial do Firebase (ES modules).
-     ========================================================= -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp, collection,
-         query, where, getDocs, orderBy, limit, onSnapshot }
-  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-const cfg = window.VIVA_FIREBASE || {};
-if (cfg && cfg.apiKey) {
-  try {
-    const app  = initializeApp(cfg);
-    const auth = getAuth(app);
-    const db   = getFirestore(app);
-    const cred = await signInAnonymously(auth);  // identidade única por aparelho
-    const uid  = cred.user.uid;
-
-    // API exposta para o app principal (ver window.vivaAoConectar).
-    const api = {
-      uid,
-      // Grava/atualiza seu perfil público (merge não apaga outros campos).
-      async salvarUsuario(d){
-        await setDoc(doc(db,'usuarios',uid),
-          { ...d, uid, atualizadoEm: serverTimestamp() }, { merge:true });
-      },
-      // Busca um usuário real pelo código VIVA-XXXX.
-      async buscarPorCodigo(cod){
-        const q = query(collection(db,'usuarios'), where('codigo','==',cod));
-        const s = await getDocs(q);
-        if (s.empty) return null;
-        const d = s.docs[0].data();
-        return { uid:d.uid, nome:d.nome, ava:d.ava, pontos:d.pontos||0, codigo:d.codigo };
-      }
-    };
-
-    // Ranking global em tempo real (top 50 por pontos).
-    const rq = query(collection(db,'usuarios'), orderBy('pontos','desc'), limit(50));
-    onSnapshot(rq, snap => {
-      const arr = snap.docs.map(x => x.data());
-      if (window.vivaRanking) window.vivaRanking(arr);
-    });
-
-    if (window.vivaAoConectar) window.vivaAoConectar(api);
-    console.log('[Viva+] ☁️ Nuvem conectada. Seu uid:', uid);
-  } catch (e) {
-    console.warn('[Viva+] Falha ao conectar no Firebase (seguindo offline):', e);
-  }
-} else {
-  console.log('[Viva+] Modo offline — preencha window.VIVA_FIREBASE para ativar o online real.');
-}
+go("home");
 </script>
 </body>
 </html>
