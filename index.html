@@ -49,6 +49,7 @@ select,input[type=number]{width:100%;min-height:50px;font:inherit;padding:10px;b
 .bar{height:12px;border-radius:8px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--ok)}
 .row{display:flex;justify-content:space-between;gap:10px;margin:10px 0 4px}
 ul{padding-left:20px;margin:6px 0}
+.card>p:first-child{margin-top:0}.card>p:last-child{margin-bottom:0}
 </style>
 </head>
 <body>
@@ -66,9 +67,9 @@ ul{padding-left:20px;margin:6px 0}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 /* ====== CONFIGURE AQUI ====== */
-const SUPABASE_URL = "https://qtqttlufsruztaeugeru.supabase.co";   // ex: https://abcd.supabase.co
-const SUPABASE_KEY = "sb_publishable_ByMXegnc3GbccT-nBT3WDA_F_hfsDZc";   // chave "anon public"
-const TURMAS = ["1°-MCN","7º ano","8º ano","9º ano","1º ano EM","2º ano EM","3º ano EM","Outra"];
+const SUPABASE_URL = "";   // ex: https://abcd.supabase.co
+const SUPABASE_KEY = "";   // chave "anon public"
+const TURMAS = ["1º MCN","1º LCH","1º RCH","2º LCH","2º MCN","3º MOD","3º NAR","Outra"];
 /* ============================ */
 
 const sb = (SUPABASE_URL && SUPABASE_KEY && window.supabase) ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
@@ -104,14 +105,17 @@ async function salvar(r){
 }
 
 /* ---------- IMC ---------- */
-/* Adultos (19+): cortes clássicos. Menores: estimativa por interpolação das curvas IMC-por-idade da OMS (2007)
-   entre 10 e 19 anos (abaixo do peso = -2 DP, sobrepeso = +1 DP, obesidade = +2 DP). Referência aproximada. */
+/* Adultos (19+): cortes clássicos (18,5 / 25 / 30).
+   10 a 18 anos: tabelas oficiais da OMS 2007 (IMC por idade, z-scores), valores aos X anos e 6 meses:
+   [-2 DP = abaixo do peso, +1 DP = sobrepeso, +2 DP = obesidade]. Fonte: who.int/tools/growth-reference-data-for-5to19-years */
+const WHO = {
+ M:{10:[13.9,18.8,21.9],11:[14.2,19.5,23.0],12:[14.7,20.4,24.2],13:[15.2,21.3,25.3],14:[15.7,22.2,26.5],15:[16.3,23.1,27.4],16:[16.7,23.9,28.3],17:[17.1,24.6,29.0],18:[17.4,25.2,29.5]},
+ F:{10:[13.7,19.4,23.1],11:[14.1,20.3,24.3],12:[14.7,21.3,25.6],13:[15.2,22.3,26.8],14:[15.7,23.1,27.8],15:[16.0,23.8,28.6],16:[16.3,24.3,29.1],17:[16.4,24.6,29.4],18:[16.5,24.9,29.6]}
+};
 function cortes(idade,sexo){
   if(idade>=19) return [18.5,25,30];
   if(!sexo) return null;
-  const A = sexo==="Masculino" ? [[13.7,16.5],[18.5,25.4],[21.4,29.7]] : [[13.5,16.5],[19.0,25.0],[22.6,30.0]];
-  const t = Math.min(Math.max((idade-10)/9,0),1);
-  return A.map(([a,b])=>a+(b-a)*t);
+  return (WHO[sexo==="Masculino"?"M":"F"][idade])||null;
 }
 function calcIMC(peso,alt,idade,sexo){
   if(!peso||!alt) return {};
@@ -119,7 +123,7 @@ function calcIMC(peso,alt,idade,sexo){
   const out={imc:Math.round(imc*10)/10};
   if(!c) return out;
   out.imc_cat = imc<c[0]?CATS[0]:imc<c[1]?CATS[1]:imc<c[2]?CATS[2]:CATS[3];
-  out.faixaKg=[Math.round(c[0]*h*h), Math.round(c[1]*h*h)];
+  out.faixaKg=[Math.ceil(c[0]*h*h), Math.floor(c[1]*h*h)];
   return out;
 }
 
@@ -213,7 +217,7 @@ function quiz(){
 async function resultado(jaFez){
   const s=JSON.parse(localStorage.getItem("viva_res")||"null");
   if(!s){ main.innerHTML=`<div class="card"><h1>Este aparelho já respondeu</h1><p>Cada aparelho responde uma vez. Obrigado por participar!</p><button class="btn" id="v">Ver resultados</button></div>`; $("#v").onclick=()=>go("home"); return; }
-  const forte=[...s.it].sort((a,b)=>b.s-a.s).filter(x=>x.s>=80).slice(0,2);
+  const forte=[...s.it].filter(x=>!["cigarro","maconha","alcool","imc_cat"].includes(x.k)&&x.s>=85).sort((a,b)=>b.s-a.s).slice(0,3);
   const fraco=[...s.it].filter(x=>x.dica&&x.s<70).sort((a,b)=>a.s-b.s).slice(0,3);
   let h=`<h1>Seu resultado</h1>`;
   if(jaFez) h+=`<p class="hint">Este aparelho já respondeu. Aqui está o seu resultado salvo.</p>`;
@@ -224,8 +228,8 @@ async function resultado(jaFez){
   }
   if(s.imc){
     h+=`<div class="card"><h2>Seu IMC: ${String(s.imc).replace(".",",")}${s.cat?` (${s.cat})`:""}</h2>`;
-    h+= s.kg ? `<p>Para a sua altura, a faixa de peso de referência fica entre <b>${s.kg[0]} e ${s.kg[1]} kg</b>.</p>` : `<p>Informe também o sexo para ver a classificação.</p>`;
-    h+=`<p class="hint">IMC é só uma referência e não mede músculo, ossos nem saúde mental. ${s.idade<19?"Na adolescência o corpo muda rápido, então a faixa é aproximada. ":""}Se tiver dúvidas sobre peso ou alimentação, converse com um profissional de saúde.</p></div>`;
+    h+= s.kg ? `<p>Para a sua altura, a faixa de peso considerada adequada fica entre <b>${s.kg[0]} e ${s.kg[1]} kg</b>.</p>` : `<p>Para classificar o IMC de quem tem menos de 19 anos, é preciso informar o sexo.</p>`;
+    h+=`<p class="hint">IMC é só uma referência e não mede músculo, ossos nem saúde mental. ${s.idade<19?"Na adolescência o IMC é avaliado por idade e sexo, e o corpo ainda está em desenvolvimento. ":""}Se tiver dúvidas sobre peso ou alimentação, converse com um profissional de saúde.</p></div>`;
   }
   if(forte.length) h+=`<div class="card"><h2>Seus pontos fortes</h2><ul>${forte.map(x=>`<li>${x.nome}</li>`).join("")}</ul></div>`;
   if(fraco.length) h+=`<div class="card"><h2>Para melhorar</h2><ul>${fraco.map(x=>`<li><b>${x.nome}:</b> ${x.dica}</li>`).join("")}</ul></div>`;
@@ -309,7 +313,7 @@ function info(){
   <div class="card"><h2>Para que serve</h2><p>O Viva+ é uma pesquisa sobre bem-estar e qualidade de vida de jovens. As respostas viram gráficos de saúde física, saúde mental e hábitos, e cada pessoa recebe uma estimativa de hábitos saudáveis.</p></div>
   <div class="card"><h2>Privacidade</h2><p>A pesquisa é anônima. Não coletamos nome, e-mail, telefone, peso nem altura. Guardamos turma, idade, sexo, IMC calculado e as respostas, sempre mostradas somadas. Um código aleatório fica no aparelho só para evitar respostas repetidas.</p></div>
   <div class="card warn"><h2>Precisa conversar?</h2><p>Este site é educativo e não substitui médico, psicólogo ou nutricionista. Se você está passando por um momento difícil, ligue para o <b>CVV: 188</b> (24 horas, gratuito) ou procure um adulto de confiança.</p></div>
-  <div class="card"><h2>Metodologia e fontes</h2><p>As perguntas se inspiram na PeNSE (IBGE) e no Vigitel (Ministério da Saúde). O IMC de adultos usa os cortes da OMS; para menores de 19 anos usa uma estimativa das curvas de IMC por idade da OMS (2007). A estimativa de hábitos compara cada resposta com recomendações como 60 minutos diários de atividade e 8 a 10 horas de sono para adolescentes, e dá mais peso a atividade, sono, humor e substâncias. Perguntas em branco ficam de fora. Os dados representam só quem respondeu e não toda a população.</p></div>`;
+  <div class="card"><h2>Metodologia e fontes</h2><p>As perguntas se inspiram na PeNSE (IBGE) e no Vigitel (Ministério da Saúde). O IMC de adultos usa os cortes da OMS; de 10 a 18 anos usa as tabelas oficiais de IMC por idade e sexo da OMS (2007). A estimativa de hábitos compara cada resposta com recomendações como 60 minutos diários de atividade e 8 a 10 horas de sono para adolescentes, e dá mais peso a atividade, sono, humor e substâncias. Perguntas em branco ficam de fora. Os dados representam só quem respondeu e não toda a população.</p></div>`;
 }
 
 go("home");
