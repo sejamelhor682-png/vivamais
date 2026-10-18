@@ -5,8 +5,8 @@ const CONFIG = {
   universityName: "pesquisa escolar",
   // Use somente a URL e a chave pública anon/publishable do Supabase.
   // Nunca coloque service_role neste arquivo.
-  supabaseUrl: "COLE_AQUI_A_PROJECT_URL",
-  supabaseAnonKey: "COLE_AQUI_A_CHAVE_PUBLICA",
+  supabaseUrl: "https://okmvktsnmupxibuwuwbv.supabase.co",
+  supabaseAnonKey: "sb_publishable_LZBHYVX5VQts6wKCPpNBgw_9Qe_BS6p",
   minGroupSize: 10, // ocultar resultados de grupos com menos de 10 respostas
   classes: [
     { id: "turma_1", name: "1mcn" },
