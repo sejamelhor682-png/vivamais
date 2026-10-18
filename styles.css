@@ -39,3 +39,19 @@ select{font:inherit;padding:12px;border-radius:10px;border:1.5px solid var(--lin
 .notices{padding-bottom:40px;color:var(--muted);font-size:.95rem;border-top:1px solid var(--line);padding-top:20px}
 dialog{border:0;border-radius:var(--r);max-width:420px;padding:24px;background:var(--card);color:var(--ink)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.view{padding-top:32px;padding-bottom:32px;max-width:680px}
+.view h2{font-size:1.8rem;margin-bottom:8px}.view h3{font-size:1.2rem;margin-bottom:8px}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 24px}
+.bar i{display:block;height:100%;width:0;background:var(--teal);transition:width .3s}
+.why{color:var(--muted)}
+#stepBody label{margin:18px 0 0}
+#stepBody input,#stepBody select{font:inherit;padding:12px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);width:100%}
+#stepBody label.check{display:flex;gap:10px;align-items:flex-start;font-weight:400}
+#stepBody label.check input{width:22px;height:22px;margin-top:3px}
+.err{color:#B3261E;margin:6px 0 0;font-size:.92rem}
+@media (prefers-color-scheme:dark){.err{color:#FF8A80}}
+.nav{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+.btn.ghost{background:transparent;color:var(--teal);border:2px solid var(--teal)}
+#reportView .card{margin:14px 0}#reportView ul{margin:6px 0;padding-left:20px}
+.chartbox{position:relative;height:300px}
+.card .n{line-height:1.4}
