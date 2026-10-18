@@ -11,6 +11,7 @@
 </head>
 <body>
 <a class="skip" href="#painel">Ir para os gráficos</a>
+<div id="homeView">
 <header class="hero">
   <div class="wrap hero-grid">
     <div>
@@ -44,6 +45,19 @@
   <section class="summary" id="summary" aria-label="Resumo dos indicadores coletivos"></section>
   <section class="charts" id="charts" aria-label="Gráficos de saúde e bem-estar"></section>
 </main>
+</div>
+
+<section class="wrap view" id="formView" hidden aria-live="polite">
+  <p class="n" id="stepCount"></p>
+  <div class="bar" role="progressbar" aria-label="Progresso"><i id="progressBar"></i></div>
+  <form id="stepBody" novalidate></form>
+  <div class="nav"><button class="btn ghost" id="btnBack" type="button">Voltar</button><button class="btn ghost" id="btnSkip" type="button" hidden>Pular esta etapa</button><button class="btn" id="btnNext" type="button">Continuar</button></div>
+</section>
+
+<section class="wrap view" id="reportView" hidden>
+  <div id="reportBody"></div>
+  <div class="nav"><button class="btn" id="btnHome" type="button">Voltar ao início</button><button class="btn ghost" id="btnDelete" type="button">Apagar meus dados deste navegador</button></div>
+</section>
 
 <footer class="wrap notices">
   <p><strong>Uso educativo.</strong> O Viva+ oferece informações gerais e não substitui avaliação médica, nutricional ou psicológica. Os resultados não são diagnósticos.</p>
@@ -52,7 +66,13 @@
 
 <dialog id="dlg"><p id="dlgMsg"></p><button class="btn small" id="dlgClose">Entendi</button></dialog>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4"></script>
 <script src="config.js"></script>
+<script src="supabase.js"></script>
+<script src="questions.js"></script>
+<script src="report.js"></script>
+<script src="charts.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
