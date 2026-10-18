@@ -1,25 +1,24 @@
-// ÚNICO lugar para editar nomes de turmas e identidade do site.
-// Regra: o "id" nunca muda depois que houver respostas; só o "name" pode ser alterado.
+// Viva+ — configuração da pesquisa escolar.
+// IMPORTANTE: mantenha os IDs abaixo estáveis se já houver respostas no Supabase.
 const CONFIG = {
   siteName: "Viva+",
-  universityName: "Geraldo Vargas Nogueira",
-  supabaseUrl: "https://okmvktsnmupxibuwuwbv.supabase.co",   // Supabase > Project Settings > API
-  supabaseKey: "https://okmvktsnmupxibuwuwbv.supabase.co",  // anon/publishable. NUNCA use a service_role
-  // Cole aqui os dados do seu projeto Supabase (Project URL e chave pública "anon"/"publishable").
-  // NUNCA cole a chave "service_role" aqui.
+  universityName: "pesquisa escolar",
+  // Use somente a URL e a chave pública anon/publishable do Supabase.
+  // Nunca coloque service_role neste arquivo.
   supabaseUrl: "COLE_AQUI_A_PROJECT_URL",
   supabaseAnonKey: "COLE_AQUI_A_CHAVE_PUBLICA",
-  minGroupSize: 10, // mínimo de respostas válidas para exibir um indicador
+  minGroupSize: 10, // ocultar resultados de grupos com menos de 10 respostas
   classes: [
-    { id: "turma_1", name: "1°-MCN" },
-    { id: "turma_2", name: "1°-LCH" },
-    { id: "turma_3", name: "1°-RCH" },
-    { id: "turma_4", name: "2°-MCN" },
-    { id: "turma_5", name: "2°-LCH" },
-    { id: "turma_6", name: "3°-MOD" },
-    { id: "turma_7", name: "3°-NAR" }
+    { id: "turma_1", name: "1mcn" },
+    { id: "turma_2", name: "1Lch" },
+    { id: "turma_3", name: "1rch" },
+    { id: "turma_4", name: "2mcn" },
+    { id: "turma_5", name: "2lch" },
+    { id: "turma_6", name: "3mod" },
+    { id: "turma_7", name: "3nar" }
   ],
-  minAge: 14, // idade mínima aceita no questionário
-  maxAge: 18, // idade máxima aceita no questionário
-  ageGroups: [
-    { id: "14_18", label: "14 a 18 anos", min: 14, max: 18 }
+  minAge: 14,
+  maxAge: 18,
+  // Não há filtro por faixa etária: o painel mostra médias separadas por idade.
+  ageGroups: []
+};

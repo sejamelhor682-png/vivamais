@@ -63,7 +63,7 @@ dialog{border:0;border-radius:var(--r);max-width:420px;padding:24px;background:v
 .nav{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
 .btn.ghost{background:transparent;color:var(--teal);border:2px solid var(--teal)}
 #reportView .card{margin:14px 0}#reportView ul{margin:6px 0;padding-left:20px}
-.chartbox{position:relative;height:300px}
+.chartbox{position:relative;min-height:260px;overflow-x:auto}.chartbox svg{min-width:320px;max-width:100%;height:auto}
 .card .n{line-height:1.4}
 
 </style>
@@ -75,8 +75,8 @@ dialog{border:0;border-radius:var(--r);max-width:420px;padding:24px;background:v
   <div class="wrap hero-grid">
     <div>
       <h1><span id="siteName">Viva</span><span class="plus" aria-hidden="true">+</span></h1>
-      <p class="lead">Entenda seus hábitos de saúde e veja como está a comunidade de <strong id="uniName"></strong>. Leva poucos minutos, sem conta e sem e-mail.</p>
-      <button class="btn" id="ctaBtn" type="button">Fazer meu diagnóstico</button>
+      <p class="lead">Pesquisa escolar sobre hábitos de saúde e bem-estar. Leva poucos minutos; não informe seu nome, matrícula ou dados de contato.</p>
+      <button class="btn" id="ctaBtn" type="button">Participar da pesquisa</button>
       <p class="hint" id="ctaHint"></p>
     </div>
     <div class="plus-art" aria-hidden="true"></div>
@@ -88,9 +88,7 @@ dialog{border:0;border-radius:var(--r);max-width:420px;padding:24px;background:v
     <label>Selecione a turma
       <select id="classSelect"></select>
     </label>
-    <label>Faixa etária
-      <select id="ageSelect"></select>
-    </label>
+    
     <label>Sexo informado
       <select id="sexSelect">
         <option value="">Todos</option>
@@ -165,10 +163,10 @@ const SIM_NAO = [["sim","Sim"],["nao","Não"]];
 
 const STEPS = [
   { id: "A", title: "Sua turma",
-    why: "Usamos a turma só para montar os gráficos coletivos. Não pedimos nome, CPF, matrícula nem e-mail. Seu relatório fica guardado neste navegador.",
+    why: "Pesquisa escolar: a turma é usada apenas para comparar resultados coletivos. Não informe nome, matrícula, telefone ou e-mail. Seu relatório individual fica neste navegador.",
     fields: [
       { id: "turma", label: "Qual é a sua turma?", type: "select", required: true, options: () => CONFIG.classes.map(c => [c.id, c.name]) },
-      { id: "consent", type: "checkbox", required: true, label: "Li e concordo em participar. Entendo que os resultados são educativos, que só indicadores de grupo serão exibidos e que posso apagar meus dados." }
+      { id: "consent", type: "checkbox", required: true, label: "Li a explicação e quero participar voluntariamente. Entendo que os resultados serão apresentados em grupo e que posso pedir para retirar minha resposta. Se tenho menos de 18 anos, confirmo que a autorização do responsável foi obtida conforme as orientações da escola." }
     ] },
   { id: "B", title: "Dados básicos",
     why: "Idade, sexo, peso e altura servem para calcular seu IMC e para os gráficos de grupo. Sexo aqui significa sexo informado, não identidade de gênero.",
@@ -179,7 +177,7 @@ const STEPS = [
       { id: "altura", label: "Qual é a sua altura, em centímetros?", type: "number", required: true, integer: true, min: 120, max: 230 }
     ] },
   { id: "C", title: "Atividade física",
-    why: "Comparamos suas respostas com as recomendações da OMS para adultos: 150 a 300 minutos de atividade aeróbica moderada por semana (ou o equivalente em vigorosa) e fortalecimento muscular em pelo menos 2 dias.",
+    why: "Esta pesquisa registra hábitos de atividade física. As necessidades variam com a idade e as condições individuais; o resultado não é diagnóstico nem avaliação de desempenho.",
     fields: [
       { id: "pratica", label: "Você pratica atividades físicas regularmente?", type: "select", required: true, options: SIM_NAO },
       { id: "dias", label: "Quantos dias por semana?", type: "number", required: true, integer: true, min: 1, max: 7, showIf: d => d.pratica === "sim" },
@@ -222,9 +220,7 @@ function catIMC(i) {
 function checkOMS(r) {
   const ativo = r.pratica === "sim";
   const min = ativo ? r.dias * r.minutos * (r.intensidade === "vigorosa" ? 2 : 1) : 0;
-  const aerobico = min >= 150, forca = (r.forca || 0) >= 2;
-  const status = aerobico && forca ? "atende" : (aerobico || forca ? "parcial" : "abaixo");
-  return { min, aerobico, forca, status };
+  return { min };
 }
 function checkAgua(ml) {
   if (ml < 1500) return "abaixo";
@@ -235,41 +231,30 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;",
 const lblOf = (k, v) => { const o = LBL[k].find(x => x[0] === String(v)); return o ? o[1] : "—"; };
 
 function buildReport(r) {
-  const imc = calcIMC(r.peso, r.altura), oms = checkOMS(r), ag = checkAgua(r.agua);
+  const imc = calcIMC(r.peso, r.altura), oms = checkOMS(r);
   const turma = CONFIG.classes.find(c => c.id === r.turma);
   const sexo = { feminino: "Feminino", masculino: "Masculino", nao_informar: "Prefiro não informar" }[r.sexo];
   const data = new Date(r.date).toLocaleDateString("pt-BR");
-  const omsTxt = {
-    atende: "Pelas suas respostas, você atinge as duas recomendações: atividade aeróbica semanal e fortalecimento muscular.",
-    parcial: oms.aerobico ? "Você atinge a meta aeróbica, mas ainda não o fortalecimento muscular em 2 dias por semana." : "Você faz fortalecimento em 2 dias ou mais, mas a atividade aeróbica semanal ficou abaixo de 150 minutos equivalentes.",
-    abaixo: "Pelas respostas, você ainda não atinge as recomendações. Isso não define sua saúde: é um ponto de partida."
-  }[r.status = oms.status];
-  const aguaTxt = {
-    abaixo: "Sua água pura informada está abaixo da referência geral. Outras bebidas e alimentos também contam, então isso não indica desidratação.",
-    dentro: "Sua água pura informada está dentro da faixa geral de referência.",
-    acima: "Sua água pura informada está acima da faixa geral de referência. A necessidade varia com calor e atividade."
-  }[ag];
+  const aguaTxt = "A necessidade de líquidos varia com idade, clima, alimentação e atividade. Este dado é descritivo e não permite concluir se você está hidratado ou desidratado.";
   const mental = r.sono ? ["sono", "estresse", "disposicao", "bemestar", "apoio"].map(k =>
     `<li><b>${{ sono: "Sono", estresse: "Estresse", disposicao: "Disposição", bemestar: "Bem-estar", apoio: "Apoio social" }[k]}:</b> ${lblOf(k, r[k])}</li>`).join("") : "";
   const dicas = [];
-  if (r.dicasAtiv === "sim" || oms.status !== "atende") dicas.push("Aumente a atividade aos poucos: acrescente 10 minutos por dia ou mais um dia na semana, e escolha algo de que você goste.");
-  if (!oms.forca && r.dicasAtiv === "sim") dicas.push("Para o fortalecimento, exercícios com o peso do corpo (agachamento, flexão, prancha) 2 vezes por semana já ajudam.");
+  if (r.dicasAtiv === "sim") dicas.push("Se quiser aumentar sua atividade, escolha algo de que você goste e faça mudanças graduais, respeitando seu conforto e suas condições.");
   if (r.dicasAgua === "sim") dicas.push("Deixe uma garrinha de água por perto, beba um copo ao acordar e leve água para as atividades físicas.");
-  if (r.dicasMental === "sim") dicas.push("Procure horários regulares de sono, pausas de lazer e conversas com pessoas de confiança. Se sentir que precisa de apoio profissional, procure o serviço de saúde da universidade ou ligue para o CVV, 188 (24 horas, gratuito).");
+  if (r.dicasMental === "sim") dicas.push("Procure manter uma rotina de sono, reservar tempo para lazer e conversar com alguém de confiança. Se precisar de apoio, procure um profissional de saúde ou o serviço de orientação da escola.");
   return `
   <h2>Seu relatório Viva+</h2>
-  <p class="n">Avaliação feita em ${data}${turma ? " · " + esc(turma.name) : ""}</p>
+  <p class="n">Resposta registrada em ${data}${turma ? " · " + esc(turma.name) : ""}</p>
   <div class="card"><h3>Seus dados informados</h3>
     <ul><li>Idade: ${r.idade} anos</li><li>Sexo informado: ${sexo}</li><li>Peso: ${r.peso} kg · Altura: ${r.altura} cm</li></ul></div>
   <div class="card"><h3>IMC: ${imc.toFixed(1).replace(".", ",")}</h3>
-    <p>Categoria de referência para adultos: <b>${catIMC(imc)}</b>.</p>
+    <p>O valor é apresentado apenas como cálculo descritivo. Para adolescentes, a interpretação do IMC depende de idade e sexo e deve ser feita por profissional habilitado; esta pesquisa não classifica seu corpo.</p>
     <p class="n">O IMC é uma triagem. Sozinho, não determina sua saúde, sua aparência nem sua capacidade física.</p></div>
   <div class="card"><h3>Atividade física e a OMS</h3>
     <p>Atividade aeróbica semanal (equivalente moderada): <b>${oms.min} min</b>. Fortalecimento: <b>${r.forca} dia(s)</b> por semana.</p>
-    <p>${omsTxt}</p>
-    <p class="n">Critério: 150 min ou mais por semana de aeróbica moderada (minutos vigorosos contam em dobro) e fortalecimento em 2 dias ou mais.</p></div>
+    <p class="n">Este é um resumo descritivo das respostas, não uma comparação com uma meta universal. Recomendações variam com a idade e as condições individuais.</p></div>
   <div class="card"><h3>Hidratação</h3>
-    <p>Você informou <b>${r.agua} mL</b> de água pura por dia. Referência geral para adultos: cerca de 1500 a 2500 mL de líquidos por dia.</p>
+    <p>Você informou <b>${r.agua} mL</b> de água pura por dia. A necessidade de líquidos varia com idade, clima, alimentação e atividade; este número não é usado para classificar sua saúde.</p>
     <p>${aguaTxt}</p></div>
   ${mental ? `<div class="card"><h3>Bem-estar</h3><ul>${mental}</ul></div>` : ""}
   ${dicas.length ? `<div class="card"><h3>Sugestões práticas</h3><ul>${dicas.map(d => `<li>${d}</li>`).join("")}</ul></div>` : ""}
@@ -281,7 +266,7 @@ if (typeof module !== "undefined") module.exports = { calcIMC, catIMC, checkOMS,
 const $ = id => document.getElementById(id);
 const KEY_R = "vivamais_resposta", DONE_KEY = "vivamais_concluido";
 let step = 0, data = {};
-const HOME_CARDS = ["Distribuição do IMC","Atividade física","Hidratação","Bem-estar mental","Comparação por sexo informado","Comparação por faixa etária","Comparação por turma","Evolução ao longo do tempo"].map(t => ({ t }));
+const HOME_CARDS = [{ t: "Médias dos indicadores de bem-estar por idade" }];
 const val = v => typeof v === "function" ? v() : v;
 const jaRespondeu = () => localStorage.getItem(DONE_KEY) === "1" && localStorage.getItem(KEY_R);
 
@@ -293,8 +278,7 @@ function init() {
   $("uniName").textContent = CONFIG.universityName;
   $("minN").textContent = CONFIG.minGroupSize;
   $("classSelect").innerHTML = '<option value="">Todas as turmas</option>' + CONFIG.classes.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
-  $("ageSelect").innerHTML = '<option value="">Todas as faixas</option>' + CONFIG.ageGroups.map(a => `<option value="${a.id}">${a.label}</option>`).join("");
-  ["classSelect", "ageSelect", "sexSelect"].forEach(id => $(id).addEventListener("change", renderHome));
+  ["classSelect", "sexSelect"].forEach(id => $(id).addEventListener("change", renderHome));
   $("ctaBtn").addEventListener("click", () => jaRespondeu() ? showReport() : startForm());
   $("btnNext").addEventListener("click", next);
   $("btnBack").addEventListener("click", () => { collect(); if (step > 0) { step--; renderStep(); } else show("homeView"); });
@@ -321,18 +305,54 @@ async function recuperar() {
 }
 
 function filters() {
-  const g = CONFIG.ageGroups.find(x => x.id === $("ageSelect").value);
-  return { p_class: $("classSelect").value || null, p_age_min: g ? g.min : null, p_age_max: g ? g.max : null, p_sex: $("sexSelect").value || null };
+  return { p_turma: $("classSelect").value || null, p_idade_min: null, p_idade_max: null, p_sexo: $("sexSelect").value || null };
 }
 function renderHome() {
   const cls = CONFIG.classes.find(c => c.id === $("classSelect").value);
-  $("scopeLine").textContent = "Mostrando: " + (cls ? cls.name : "todas as turmas da universidade");
+  $("scopeLine").textContent = "Mostrando: " + (cls ? cls.name : "todas as turmas participantes");
   $("ctaHint").textContent = jaRespondeu() ? "Você já respondeu neste navegador. O botão abre o seu relatório." : "";
-  $("summary").innerHTML = ["Respostas válidas", "Praticam atividade física", "Atendem às metas da OMS", "Bem-estar médio (1 a 5)"].map(s => `<div class="stat"><b>—</b><span>${s}</span></div>`).join("");
-  const L = typeof CARDS !== "undefined" ? CARDS : HOME_CARDS;
-  $("charts").innerHTML = L.map((c, i) => `<article class="card"><h2>${c.t}</h2><p class="n" id="n_${i}">Respostas válidas: 0</p>
-    <div class="chartbox" id="b_${i}" hidden><canvas id="c_${i}"></canvas></div><div class="empty" id="m_${i}">Ainda não há dados suficientes para esta turma</div></article>`).join("");
-  if (typeof renderCharts === "function") { window._tk = (window._tk || 0) + 1; renderCharts(filters(), window._tk); }
+  $("summary").innerHTML = ["Respostas válidas", "Praticam atividade física", "Média de minutos equivalentes/semana", "Bem-estar médio (1 a 5)"].map(s => `<div class="stat"><b>—</b><span>${s}</span></div>`).join("");
+  $("charts").innerHTML = `<article class="card"><h2>Média dos indicadores por idade</h2><p class="n">Escala de 1 a 5. Cada idade só aparece quando há pelo menos ${CONFIG.minGroupSize} respostas válidas; valores mais altos significam maior pontuação naquela pergunta, não um diagnóstico.</p><div id="ageChart" class="chartbox" aria-live="polite"><div class="empty">Carregando indicadores…</div></div></article>`;
+  window._tk = (window._tk || 0) + 1;
+  renderCharts(filters(), window._tk);
+}
+
+async function renderCharts(f, tk) {
+  if (!SB.ready) { $("ageChart").innerHTML = '<div class="empty">Configure a URL e a chave pública do Supabase em config.js para carregar os resultados coletivos.</div>'; return; }
+  try {
+    const r = await SB.indicadores(f);
+    if (tk !== window._tk) return;
+    if (!r || r.suficiente !== true) {
+      $("summary").innerHTML = `<div class="stat"><b>—</b><span>Respostas válidas</span></div>`;
+      $("ageChart").innerHTML = `<div class="empty">Ainda não há ${CONFIG.minGroupSize} respostas válidas no filtro selecionado.</div>`;
+      return;
+    }
+    const n = Number(r.n || 0), reg = Number(r.atividade?.regular || 0), minSem = r.atividade?.media_min_semana == null ? "—" : Number(r.atividade.media_min_semana).toLocaleString("pt-BR", {maximumFractionDigits:1});
+    const bm = r.mental && r.mental.bemestar != null ? Number(r.mental.bemestar).toLocaleString("pt-BR", {maximumFractionDigits:1}) : "—";
+    $("summary").innerHTML = [[n,"Respostas válidas"],[reg, "Praticam atividade física"],[minSem,"Média de minutos equivalentes/semana"],[bm,"Bem-estar médio (1 a 5)"]].map(([v,l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+    const rows = Array.isArray(r.media_por_idade) ? r.media_por_idade : [];
+    if (!rows.length) { $("ageChart").innerHTML = `<div class="empty">Não há idade com ${CONFIG.minGroupSize} respostas completas para estes indicadores. Nenhuma média foi exibida para proteger a privacidade.</div>`; return; }
+    const metrics = [["sono","Sono"],["estresse","Estresse"],["disposicao","Disposição"],["bemestar","Bem-estar"],["apoio","Apoio social"]];
+    const colors = ["#0B6B63","#4C78A8","#E09F3E","#8A6FB0","#4F8F68"];
+    const groupW = 84, barW = 10, gap = 3, left = 36, top = 22, bottom = 34, height = 210;
+    const width = Math.max(320, left + rows.length * groupW + 10), svgH = top + height + bottom;
+    let svg = `<svg role="img" aria-label="Gráfico de médias dos indicadores de bem-estar por idade" viewBox="0 0 ${width} ${svgH}" width="100%" height="${svgH}" xmlns="http://www.w3.org/2000/svg">`;
+    [1,2,3,4,5].forEach(v => { const y = top + height - (v/5)*height; svg += `<line x1="${left-4}" y1="${y}" x2="${width-8}" y2="${y}" stroke="currentColor" opacity=".16"/><text x="${left-10}" y="${y+4}" text-anchor="end" font-size="11" fill="currentColor">${v}</text>`; });
+    rows.forEach((row,i) => {
+      const gx = left + i*groupW + 8;
+      metrics.forEach(([key,label],j) => {
+        const value = row[key] == null ? null : Number(row[key]); if (!Number.isFinite(value)) return;
+        const h = Math.max(0, value/5*height), x = gx+j*(barW+gap), y = top+height-h;
+        svg += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="2" fill="${colors[j]}"><title>${label}, ${row.idade} anos: ${value.toLocaleString("pt-BR",{maximumFractionDigits:1})}</title></rect>`;
+      });
+      svg += `<text x="${gx+26}" y="${top+height+20}" text-anchor="middle" font-size="12" fill="currentColor">${Number(row.idade)} anos</text>`;
+    });
+    svg += '</svg>';
+    const legend = metrics.map(([k,l],i)=>`<span style="display:inline-flex;align-items:center;gap:5px;margin:3px 10px 3px 0;font-size:.88rem"><i style="display:inline-block;width:10px;height:10px;background:${colors[i]};border-radius:2px"></i>${l}</span>`).join("");
+    $("ageChart").innerHTML = svg + `<div aria-label="Legenda">${legend}</div><p class="n">Cada barra é a média das respostas para aquele indicador e idade. O estresse mantém a escala original da pergunta; não compare indicadores diferentes como se medissem a mesma coisa.</p>`;
+  } catch (e) {
+    if (tk === window._tk) $("ageChart").innerHTML = '<div class="empty">Não foi possível carregar os indicadores. Confira a conexão e as funções RPC do Supabase.</div>';
+  }
 }
 
 function startForm() { data = {}; step = 0; show("formView"); renderStep(); }
