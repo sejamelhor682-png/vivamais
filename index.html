@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Viva+</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2F7F6;--ink:#10302E;--muted:#4D6663;--teal:#0B6B63;--mint:#CFEBE3;--sun:#F4C430;--line:#C9DAD6;--card:#fff;--r:14px}
+@media (prefers-color-scheme:dark){:root{--bg:#0D1F1E;--ink:#E8F3F0;--muted:#9FB8B3;--teal:#5CCBBE;--mint:#173533;--line:#2A4745;--card:#132A28}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1.0625rem/1.6 "Source Sans 3",system-ui,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.skip{position:absolute;left:-999px}.skip:focus{left:8px;top:8px;background:var(--sun);color:#000;padding:8px;z-index:9}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.1;margin:0}
+.hero{background:var(--mint);padding:48px 0 40px;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1fr;gap:24px;align-items:center}
+h1{font-size:clamp(3.5rem,14vw,7rem);font-weight:800;letter-spacing:-.03em}
+.plus{color:var(--sun);-webkit-text-stroke:2px var(--teal)}
+.lead{max-width:52ch;margin:16px 0 24px;font-size:1.2rem}
+.hint{color:var(--muted);margin:10px 0 0;min-height:1.5em}
+.btn{background:var(--teal);color:#fff;border:0;border-radius:999px;padding:16px 28px;font:700 1.05rem "Bricolage Grotesque",sans-serif;cursor:pointer}
+@media (prefers-color-scheme:dark){.btn{color:#06201D}}
+.btn:hover{filter:brightness(1.1)}.btn.small{padding:10px 20px;margin-top:12px}
+:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+.plus-art{display:none}
+@media(min-width:760px){.hero-grid{grid-template-columns:1.4fr 1fr}
+.plus-art{display:block;aspect-ratio:1;background:
+ linear-gradient(var(--teal),var(--teal)) center/26% 100% no-repeat,
+ linear-gradient(var(--teal),var(--teal)) center/100% 26% no-repeat;border-radius:22px;opacity:.9;max-width:260px;justify-self:center}}
+.filters{display:grid;gap:14px;grid-template-columns:1fr;margin:32px 0 8px}
+@media(min-width:760px){.filters{grid-template-columns:2fr 1fr 1fr}}
+label{font-weight:600;display:grid;gap:6px;font-size:.95rem}
+select{font:inherit;padding:12px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink)}
+.scope{color:var(--muted);margin:4px 0 20px}
+.summary{display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
+@media(min-width:760px){.summary{grid-template-columns:repeat(4,1fr)}}
+.stat{border-left:4px solid var(--teal);padding:4px 0 4px 14px}
+.stat b{font:800 2rem "Bricolage Grotesque",sans-serif;display:block}
+.stat span{color:var(--muted);font-size:.92rem}
+.charts{display:grid;gap:18px;margin:28px 0 40px;grid-template-columns:1fr}
+@media(min-width:760px){.charts{grid-template-columns:1fr 1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.card h2{font-size:1.3rem}
+.card .n{color:var(--muted);font-size:.9rem;margin:4px 0 14px}
+.empty{border:1.5px dashed var(--line);border-radius:10px;padding:22px;color:var(--muted);text-align:center}
+.notices{padding-bottom:40px;color:var(--muted);font-size:.95rem;border-top:1px solid var(--line);padding-top:20px}
+dialog{border:0;border-radius:var(--r);max-width:420px;padding:24px;background:var(--card);color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.view{padding-top:32px;padding-bottom:32px;max-width:680px}
+.view h2{font-size:1.8rem;margin-bottom:8px}.view h3{font-size:1.2rem;margin-bottom:8px}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 24px}
+.bar i{display:block;height:100%;width:0;background:var(--teal);transition:width .3s}
+.why{color:var(--muted)}
+#stepBody label{margin:18px 0 0}
+#stepBody input,#stepBody select{font:inherit;padding:12px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);width:100%}
+#stepBody label.check{display:flex;gap:10px;align-items:flex-start;font-weight:400}
+#stepBody label.check input{width:22px;height:22px;margin-top:3px}
+.err{color:#B3261E;margin:6px 0 0;font-size:.92rem}
+@media (prefers-color-scheme:dark){.err{color:#FF8A80}}
+.nav{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+.btn.ghost{background:transparent;color:var(--teal);border:2px solid var(--teal)}
+#reportView .card{margin:14px 0}#reportView ul{margin:6px 0;padding-left:20px}
+.chartbox{position:relative;height:300px}
+.card .n{line-height:1.4}
+
+</style>
+</head>
+<body>
+<a class="skip" href="#painel">Ir para os gráficos</a>
+<div id="homeView">
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1><span id="siteName">Viva</span><span class="plus" aria-hidden="true">+</span></h1>
+      <p class="lead">Entenda seus hábitos de saúde e veja como está a comunidade de <strong id="uniName"></strong>. Leva poucos minutos, sem conta e sem e-mail.</p>
+      <button class="btn" id="ctaBtn" type="button">Fazer meu diagnóstico</button>
+      <p class="hint" id="ctaHint"></p>
+    </div>
+    <div class="plus-art" aria-hidden="true"></div>
+  </div>
+</header>
+
+<main class="wrap" id="painel">
+  <section class="filters" aria-label="Filtros">
+    <label>Selecione a turma
+      <select id="classSelect"></select>
+    </label>
+    <label>Faixa etária
+      <select id="ageSelect"></select>
+    </label>
+    <label>Sexo informado
+      <select id="sexSelect">
+        <option value="">Todos</option>
+        <option value="feminino">Feminino</option>
+        <option value="masculino">Masculino</option>
+      </select>
+    </label>
+  </section>
+  <p class="scope" id="scopeLine" aria-live="polite"></p>
+
+  <section class="summary" id="summary" aria-label="Resumo dos indicadores coletivos"></section>
+  <section class="charts" id="charts" aria-label="Gráficos de saúde e bem-estar"></section>
+</main>
+</div>
+
+<section class="wrap view" id="formView" hidden aria-live="polite">
+  <p class="n" id="stepCount"></p>
+  <div class="bar" role="progressbar" aria-label="Progresso"><i id="progressBar"></i></div>
+  <form id="stepBody" novalidate></form>
+  <p class="err" id="sendErr" role="alert"></p>
+  <div class="nav"><button class="btn ghost" id="btnBack" type="button">Voltar</button><button class="btn ghost" id="btnSkip" type="button" hidden>Pular esta etapa</button><button class="btn" id="btnNext" type="button">Continuar</button></div>
+</section>
+
+<section class="wrap view" id="reportView" hidden>
+  <div id="reportBody"></div>
+  <div class="nav"><button class="btn" id="btnHome" type="button">Voltar ao início</button><button class="btn ghost" id="btnDelete" type="button">Apagar meus dados deste navegador</button></div>
+</section>
+
+<footer class="wrap notices">
+  <p><strong>Uso educativo.</strong> O Viva+ oferece informações gerais e não substitui avaliação médica, nutricional ou psicológica. Os resultados não são diagnósticos.</p>
+  <p><strong>Privacidade.</strong> Não pedimos nome, CPF, matrícula nem e-mail. Só mostramos indicadores de grupo; nenhuma resposta individual é exibida, e grupos com menos de <span id="minN"></span> respostas ficam ocultos.</p>
+</footer>
+
+<dialog id="dlg"><p id="dlgMsg"></p><button class="btn small" id="dlgClose">Entendi</button></dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+// Comunicação com o Supabase. Usa só a chave pública (anon) definida em config.js.
+const SB = (() => {
+  const TK = "vivamais_token";
+  const configurado = CONFIG.supabaseUrl && !CONFIG.supabaseUrl.startsWith("COLE");
+  const client = configurado && window.supabase
+    ? window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey) : null;
+  function novoToken() {
+    if (crypto.randomUUID) return crypto.randomUUID();
+    const b = crypto.getRandomValues(new Uint8Array(16)); b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+    const h = [...b].map(x => x.toString(16).padStart(2, "0")).join("");
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+  }
+  const hasToken = () => !!localStorage.getItem(TK);
+  const token = () => { let t = localStorage.getItem(TK); if (!t) { t = novoToken(); localStorage.setItem(TK, t); } return t; };
+  async function rpc(fn, args) {
+    const { data, error } = await client.rpc(fn, args);
+    if (error) throw new Error("Falha na comunicação");
+    return data;
+  }
+  return {
+    ready: !!client, hasToken, clearToken: () => localStorage.removeItem(TK),
+    enviar: d => rpc("enviar_resposta", { p_token: token(), p_dados: d }),
+    minha: () => rpc("obter_minha_resposta", { p_token: token() }),
+    apagar: () => rpc("apagar_minha_resposta", { p_token: token() }),
+    indicadores: f => rpc("indicadores", f) // usado na etapa 4
+  };
+})();
+
+// Perguntas do questionário. Para mudar um texto ou uma opção, edite aqui.
+const Q_NIVEL = [["1","1 – Muito baixo"],["2","2 – Baixo"],["3","3 – Médio"],["4","4 – Alto"],["5","5 – Muito alto"]];
+const Q_QUAL = [["1","1 – Muito ruim"],["2","2 – Ruim"],["3","3 – Regular"],["4","4 – Boa"],["5","5 – Muito boa"]];
+const Q_APOIO = [["1","1 – Nenhum"],["2","2 – Pouco"],["3","3 – Algum"],["4","4 – Bastante"],["5","5 – Muito"]];
+const SIM_NAO = [["sim","Sim"],["nao","Não"]];
+
+const STEPS = [
+  { id: "A", title: "Sua turma",
+    why: "Usamos a turma só para montar os gráficos coletivos. Não pedimos nome, CPF, matrícula nem e-mail. Seu relatório fica guardado neste navegador.",
+    fields: [
+      { id: "turma", label: "Qual é a sua turma?", type: "select", required: true, options: () => CONFIG.classes.map(c => [c.id, c.name]) },
+      { id: "consent", type: "checkbox", required: true, label: "Li e concordo em participar. Entendo que os resultados são educativos, que só indicadores de grupo serão exibidos e que posso apagar meus dados." }
+    ] },
+  { id: "B", title: "Dados básicos",
+    why: "Idade, sexo, peso e altura servem para calcular seu IMC e para os gráficos de grupo. Sexo aqui significa sexo informado, não identidade de gênero.",
+    fields: [
+      { id: "idade", label: "Qual é a sua idade, em anos?", type: "number", required: true, integer: true, min: () => CONFIG.minAge, max: () => CONFIG.maxAge },
+      { id: "sexo", label: "Qual é o seu sexo?", type: "select", required: true, options: [["feminino","Feminino"],["masculino","Masculino"],["nao_informar","Prefiro não informar"]] },
+      { id: "peso", label: "Qual é o seu peso, em quilogramas?", type: "number", required: true, min: 30, max: 300, step: "0.1" },
+      { id: "altura", label: "Qual é a sua altura, em centímetros?", type: "number", required: true, integer: true, min: 120, max: 230 }
+    ] },
+  { id: "C", title: "Atividade física",
+    why: "Comparamos suas respostas com as recomendações da OMS para adultos: 150 a 300 minutos de atividade aeróbica moderada por semana (ou o equivalente em vigorosa) e fortalecimento muscular em pelo menos 2 dias.",
+    fields: [
+      { id: "pratica", label: "Você pratica atividades físicas regularmente?", type: "select", required: true, options: SIM_NAO },
+      { id: "dias", label: "Quantos dias por semana?", type: "number", required: true, integer: true, min: 1, max: 7, showIf: d => d.pratica === "sim" },
+      { id: "minutos", label: "Quantos minutos por dia, em média?", type: "number", required: true, integer: true, min: 5, max: 300, showIf: d => d.pratica === "sim" },
+      { id: "intensidade", label: "Em geral, a intensidade é:", type: "select", required: true, showIf: d => d.pratica === "sim", options: [["moderada","Moderada (dá para conversar)"],["vigorosa","Vigorosa (fala com dificuldade)"]] },
+      { id: "forca", label: "Em quantos dias por semana você faz fortalecimento muscular?", type: "number", required: true, integer: true, min: 0, max: 7 },
+      { id: "dicasAtiv", label: "Você gostaria de receber sugestões para sua rotina?", type: "select", required: true, options: SIM_NAO }
+    ] },
+  { id: "D", title: "Hidratação",
+    why: "Não existe um valor obrigatório para todos: a necessidade muda com atividade, calor, alimentação e condições individuais. Mostramos só uma referência geral.",
+    fields: [
+      { id: "agua", label: "Quantos mL de água pura você costuma beber por dia? (1 litro = 1000 mL)", type: "number", required: true, integer: true, min: 0, max: 10000 },
+      { id: "aguaAtiv", label: "Você bebe água durante e depois das atividades físicas?", type: "select", required: true, options: [["sim","Sim"],["as_vezes","Às vezes"],["nao","Não"],["nao_pratico","Não pratico atividades"]] },
+      { id: "dicasAgua", label: "Gostaria de receber sugestões para melhorar sua hidratação?", type: "select", required: true, options: SIM_NAO }
+    ] },
+  { id: "E", title: "Bem-estar", optional: true,
+    why: "Esta etapa é opcional e você pode pular. Suas respostas não geram diagnóstico e nunca aparecem individualmente nos gráficos.",
+    fields: [
+      { id: "sono", label: "Como você avalia a qualidade do seu sono?", type: "select", options: Q_QUAL },
+      { id: "estresse", label: "Como está o seu nível de estresse nas últimas semanas?", type: "select", options: Q_NIVEL },
+      { id: "disposicao", label: "Como está a sua disposição para as atividades diárias?", type: "select", options: Q_NIVEL },
+      { id: "bemestar", label: "Como você avalia o seu bem-estar geral?", type: "select", options: Q_QUAL },
+      { id: "apoio", label: "Quanto apoio social você sente que tem (amigos, família, colegas)?", type: "select", options: Q_APOIO },
+      { id: "dicasMental", label: "Gostaria de receber orientações de autocuidado?", type: "select", options: SIM_NAO }
+    ] }
+];
+
+// Cálculos e texto do relatório individual (educativo, não é diagnóstico).
+const LBL = { sono: Q_QUAL, bemestar: Q_QUAL, estresse: Q_NIVEL, disposicao: Q_NIVEL, apoio: Q_APOIO };
+
+function calcIMC(peso, alturaCm) { const m = alturaCm / 100; return peso / (m * m); }
+function catIMC(i) {
+  if (i < 18.5) return "Baixo peso";
+  if (i < 25) return "Faixa considerada adequada";
+  if (i < 30) return "Sobrepeso";
+  if (i < 35) return "Obesidade grau I";
+  if (i < 40) return "Obesidade grau II";
+  return "Obesidade grau III";
+}
+function checkOMS(r) {
+  const ativo = r.pratica === "sim";
+  const min = ativo ? r.dias * r.minutos * (r.intensidade === "vigorosa" ? 2 : 1) : 0;
+  const aerobico = min >= 150, forca = (r.forca || 0) >= 2;
+  const status = aerobico && forca ? "atende" : (aerobico || forca ? "parcial" : "abaixo");
+  return { min, aerobico, forca, status };
+}
+function checkAgua(ml) {
+  if (ml < 1500) return "abaixo";
+  if (ml <= 2500) return "dentro";
+  return "acima";
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const lblOf = (k, v) => { const o = LBL[k].find(x => x[0] === String(v)); return o ? o[1] : "—"; };
+
+function buildReport(r) {
+  const imc = calcIMC(r.peso, r.altura), oms = checkOMS(r), ag = checkAgua(r.agua);
+  const turma = CONFIG.classes.find(c => c.id === r.turma);
+  const sexo = { feminino: "Feminino", masculino: "Masculino", nao_informar: "Prefiro não informar" }[r.sexo];
+  const data = new Date(r.date).toLocaleDateString("pt-BR");
+  const omsTxt = {
+    atende: "Pelas suas respostas, você atinge as duas recomendações: atividade aeróbica semanal e fortalecimento muscular.",
+    parcial: oms.aerobico ? "Você atinge a meta aeróbica, mas ainda não o fortalecimento muscular em 2 dias por semana." : "Você faz fortalecimento em 2 dias ou mais, mas a atividade aeróbica semanal ficou abaixo de 150 minutos equivalentes.",
+    abaixo: "Pelas respostas, você ainda não atinge as recomendações. Isso não define sua saúde: é um ponto de partida."
+  }[r.status = oms.status];
+  const aguaTxt = {
+    abaixo: "Sua água pura informada está abaixo da referência geral. Outras bebidas e alimentos também contam, então isso não indica desidratação.",
+    dentro: "Sua água pura informada está dentro da faixa geral de referência.",
+    acima: "Sua água pura informada está acima da faixa geral de referência. A necessidade varia com calor e atividade."
+  }[ag];
+  const mental = r.sono ? ["sono", "estresse", "disposicao", "bemestar", "apoio"].map(k =>
+    `<li><b>${{ sono: "Sono", estresse: "Estresse", disposicao: "Disposição", bemestar: "Bem-estar", apoio: "Apoio social" }[k]}:</b> ${lblOf(k, r[k])}</li>`).join("") : "";
+  const dicas = [];
+  if (r.dicasAtiv === "sim" || oms.status !== "atende") dicas.push("Aumente a atividade aos poucos: acrescente 10 minutos por dia ou mais um dia na semana, e escolha algo de que você goste.");
+  if (!oms.forca && r.dicasAtiv === "sim") dicas.push("Para o fortalecimento, exercícios com o peso do corpo (agachamento, flexão, prancha) 2 vezes por semana já ajudam.");
+  if (r.dicasAgua === "sim") dicas.push("Deixe uma garrinha de água por perto, beba um copo ao acordar e leve água para as atividades físicas.");
+  if (r.dicasMental === "sim") dicas.push("Procure horários regulares de sono, pausas de lazer e conversas com pessoas de confiança. Se sentir que precisa de apoio profissional, procure o serviço de saúde da universidade ou ligue para o CVV, 188 (24 horas, gratuito).");
+  return `
+  <h2>Seu relatório Viva+</h2>
+  <p class="n">Avaliação feita em ${data}${turma ? " · " + esc(turma.name) : ""}</p>
+  <div class="card"><h3>Seus dados informados</h3>
+    <ul><li>Idade: ${r.idade} anos</li><li>Sexo informado: ${sexo}</li><li>Peso: ${r.peso} kg · Altura: ${r.altura} cm</li></ul></div>
+  <div class="card"><h3>IMC: ${imc.toFixed(1).replace(".", ",")}</h3>
+    <p>Categoria de referência para adultos: <b>${catIMC(imc)}</b>.</p>
+    <p class="n">O IMC é uma triagem. Sozinho, não determina sua saúde, sua aparência nem sua capacidade física.</p></div>
+  <div class="card"><h3>Atividade física e a OMS</h3>
+    <p>Atividade aeróbica semanal (equivalente moderada): <b>${oms.min} min</b>. Fortalecimento: <b>${r.forca} dia(s)</b> por semana.</p>
+    <p>${omsTxt}</p>
+    <p class="n">Critério: 150 min ou mais por semana de aeróbica moderada (minutos vigorosos contam em dobro) e fortalecimento em 2 dias ou mais.</p></div>
+  <div class="card"><h3>Hidratação</h3>
+    <p>Você informou <b>${r.agua} mL</b> de água pura por dia. Referência geral para adultos: cerca de 1500 a 2500 mL de líquidos por dia.</p>
+    <p>${aguaTxt}</p></div>
+  ${mental ? `<div class="card"><h3>Bem-estar</h3><ul>${mental}</ul></div>` : ""}
+  ${dicas.length ? `<div class="card"><h3>Sugestões práticas</h3><ul>${dicas.map(d => `<li>${d}</li>`).join("")}</ul></div>` : ""}
+  <p class="n">Este relatório é educativo e não substitui avaliação médica, nutricional ou psicológica.</p>`;
+}
+if (typeof module !== "undefined") module.exports = { calcIMC, catIMC, checkOMS, checkAgua };
+
+// Questionário, relatório e painel. Respostas vão ao Supabase; uma cópia fica neste navegador.
+const $ = id => document.getElementById(id);
+const KEY_R = "vivamais_resposta", DONE_KEY = "vivamais_concluido";
+let step = 0, data = {};
+const HOME_CARDS = ["Distribuição do IMC","Atividade física","Hidratação","Bem-estar mental","Comparação por sexo informado","Comparação por faixa etária","Comparação por turma","Evolução ao longo do tempo"].map(t => ({ t }));
+const val = v => typeof v === "function" ? v() : v;
+const jaRespondeu = () => localStorage.getItem(DONE_KEY) === "1" && localStorage.getItem(KEY_R);
+
+function show(v) { ["homeView", "formView", "reportView"].forEach(x => $(x).hidden = x !== v); window.scrollTo(0, 0); }
+
+function init() {
+  document.title = CONFIG.siteName;
+  $("siteName").textContent = CONFIG.siteName.replace("+", "");
+  $("uniName").textContent = CONFIG.universityName;
+  $("minN").textContent = CONFIG.minGroupSize;
+  $("classSelect").innerHTML = '<option value="">Todas as turmas</option>' + CONFIG.classes.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+  $("ageSelect").innerHTML = '<option value="">Todas as faixas</option>' + CONFIG.ageGroups.map(a => `<option value="${a.id}">${a.label}</option>`).join("");
+  ["classSelect", "ageSelect", "sexSelect"].forEach(id => $(id).addEventListener("change", renderHome));
+  $("ctaBtn").addEventListener("click", () => jaRespondeu() ? showReport() : startForm());
+  $("btnNext").addEventListener("click", next);
+  $("btnBack").addEventListener("click", () => { collect(); if (step > 0) { step--; renderStep(); } else show("homeView"); });
+  $("btnSkip").addEventListener("click", () => { STEPS[step].fields.forEach(f => delete data[f.id]); finish(); });
+  $("btnHome").addEventListener("click", () => { show("homeView"); renderHome(); });
+  $("btnDelete").addEventListener("click", async () => {
+    if (!confirm("Apagar seu relatório e sua resposta? Depois você poderá responder de novo.")) return;
+    try { if (SB.ready && SB.hasToken()) await SB.apagar(); }
+    catch (e) { alert("Não foi possível apagar agora. Tente de novo mais tarde."); return; }
+    localStorage.removeItem(KEY_R); localStorage.removeItem(DONE_KEY); SB.clearToken(); show("homeView"); renderHome();
+  });
+  $("stepBody").addEventListener("input", () => { collect(); updateVis(); });
+  $("stepBody").addEventListener("submit", e => e.preventDefault());
+  renderHome();
+  recuperar();
+}
+
+async function recuperar() {
+  if (!SB.ready || jaRespondeu() || !SB.hasToken()) return;
+  try {
+    const r = await SB.minha();
+    if (r) { localStorage.setItem(KEY_R, JSON.stringify(r)); localStorage.setItem(DONE_KEY, "1"); renderHome(); }
+  } catch (e) { /* sem conexão: segue sem recuperar */ }
+}
+
+function filters() {
+  const g = CONFIG.ageGroups.find(x => x.id === $("ageSelect").value);
+  return { p_class: $("classSelect").value || null, p_age_min: g ? g.min : null, p_age_max: g ? g.max : null, p_sex: $("sexSelect").value || null };
+}
+function renderHome() {
+  const cls = CONFIG.classes.find(c => c.id === $("classSelect").value);
+  $("scopeLine").textContent = "Mostrando: " + (cls ? cls.name : "todas as turmas da universidade");
+  $("ctaHint").textContent = jaRespondeu() ? "Você já respondeu neste navegador. O botão abre o seu relatório." : "";
+  $("summary").innerHTML = ["Respostas válidas", "Praticam atividade física", "Atendem às metas da OMS", "Bem-estar médio (1 a 5)"].map(s => `<div class="stat"><b>—</b><span>${s}</span></div>`).join("");
+  const L = typeof CARDS !== "undefined" ? CARDS : HOME_CARDS;
+  $("charts").innerHTML = L.map((c, i) => `<article class="card"><h2>${c.t}</h2><p class="n" id="n_${i}">Respostas válidas: 0</p>
+    <div class="chartbox" id="b_${i}" hidden><canvas id="c_${i}"></canvas></div><div class="empty" id="m_${i}">Ainda não há dados suficientes para esta turma</div></article>`).join("");
+  if (typeof renderCharts === "function") { window._tk = (window._tk || 0) + 1; renderCharts(filters(), window._tk); }
+}
+
+function startForm() { data = {}; step = 0; show("formView"); renderStep(); }
+
+function fieldHtml(f) {
+  const id = "f_" + f.id, v = data[f.id];
+  let inner;
+  if (f.type === "select") {
+    const opts = val(f.options).map(o => `<option value="${o[0]}"${String(v) === o[0] ? " selected" : ""}>${o[1]}</option>`).join("");
+    inner = `<label>${f.label}<select id="${id}"><option value="">Selecione</option>${opts}</select></label>`;
+  } else if (f.type === "number") {
+    inner = `<label>${f.label}<input id="${id}" type="number" inputmode="decimal" min="${val(f.min)}" max="${val(f.max)}" step="${f.step || 1}" value="${v ?? ""}"></label>`;
+  } else {
+    inner = `<label class="check"><input id="${id}" type="checkbox"${v ? " checked" : ""}> <span>${f.label}</span></label>`;
+  }
+  return `<div id="w_${f.id}">${inner}<p class="err" id="e_${f.id}" role="alert"></p></div>`;
+}
+
+function renderStep() {
+  const s = STEPS[step];
+  $("stepCount").textContent = `Etapa ${step + 1} de ${STEPS.length}`;
+  $("progressBar").style.width = (step / STEPS.length * 100) + "%";
+  $("stepBody").innerHTML = `<h2>${s.title}</h2><p class="why">${s.why}</p>` + s.fields.map(fieldHtml).join("");
+  $("btnSkip").hidden = !s.optional;
+  $("btnNext").textContent = step === STEPS.length - 1 ? "Ver meu relatório" : "Continuar";
+  updateVis();
+}
+
+function isVisible(f) { return !f.showIf || f.showIf(data); }
+function updateVis() { STEPS[step].fields.forEach(f => { $("w_" + f.id).hidden = !isVisible(f); }); }
+
+function collect() {
+  STEPS[step].fields.forEach(f => {
+    const el = $("f_" + f.id); if (!el) return;
+    if (f.type === "checkbox") data[f.id] = el.checked;
+    else data[f.id] = el.value === "" ? undefined : (f.type === "number" ? Number(el.value) : el.value);
+  });
+  STEPS[step].fields.forEach(f => { if (!isVisible(f)) delete data[f.id]; });
+}
+
+function validate() {
+  let ok = true;
+  STEPS[step].fields.forEach(f => {
+    let msg = ""; const v = data[f.id], e = $("e_" + f.id);
+    if (isVisible(f)) {
+      const vazio = v === undefined || v === false || Number.isNaN(v);
+      if (f.required && vazio) msg = f.type === "checkbox" ? "Marque esta opção para continuar." : "Preencha este campo.";
+      else if (f.type === "number" && v !== undefined) {
+        if (f.integer && !Number.isInteger(v)) msg = "Use um número inteiro.";
+        else if (v < val(f.min) || v > val(f.max)) msg = `Informe um valor entre ${val(f.min)} e ${val(f.max)}.`;
+      }
+    }
+    e.textContent = msg; if (msg) ok = false;
+  });
+  return ok;
+}
+
+function next() {
+  collect();
+  if (!validate()) { const bad = document.querySelector(".err:not(:empty)"); if (bad) bad.scrollIntoView({ block: "center" }); return; }
+  if (step < STEPS.length - 1) { step++; renderStep(); window.scrollTo(0, 0); } else finish();
+}
+
+async function finish() {
+  data.date = new Date().toISOString();
+  const err = $("sendErr"); err.textContent = "";
+  if (SB.ready) {
+    $("btnNext").disabled = true;
+    try {
+      const r = await SB.enviar(data);
+      if (r === "invalido") { err.textContent = "Alguma resposta não foi aceita. Volte e confira os campos."; return; }
+      if (r === "duplicado") { const srv = await SB.minha(); if (srv) data = srv; }
+    } catch (e) { err.textContent = "Não foi possível enviar agora. Verifique a conexão e tente de novo."; return; }
+    finally { $("btnNext").disabled = false; }
+  }
+  localStorage.setItem(KEY_R, JSON.stringify(data));
+  localStorage.setItem(DONE_KEY, "1");
+  showReport();
+}
+
+function showReport() {
+  $("reportBody").innerHTML = buildReport(JSON.parse(localStorage.getItem(KEY_R)));
+  show("reportView");
+}
+init();
+
+</script>
+</body>
+</html>
