@@ -3,6 +3,12 @@
 const CONFIG = {
   siteName: "Viva+",
   universityName: "NOME DA UNIVERSIDADE",
+  supabaseUrl: "COLE_AQUI_A_PROJECT_URL",   // Supabase > Project Settings > API
+  supabaseKey: "COLE_AQUI_A_CHAVE_PUBLICA",  // anon/publishable. NUNCA use a service_role
+  // Cole aqui os dados do seu projeto Supabase (Project URL e chave pública "anon"/"publishable").
+  // NUNCA cole a chave "service_role" aqui.
+  supabaseUrl: "COLE_AQUI_A_PROJECT_URL",
+  supabaseAnonKey: "COLE_AQUI_A_CHAVE_PUBLICA",
   minGroupSize: 10, // mínimo de respostas válidas para exibir um indicador
   classes: [
     { id: "turma_1", name: "NOME DA TURMA 1" },
