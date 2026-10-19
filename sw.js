@@ -1,4 +1,4 @@
-const V = "viva-v1";
+const V = "viva-v2";
 const ARQ = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(ARQ)));
@@ -15,6 +15,6 @@ self.addEventListener("fetch", e => {
       const copia = r.clone();
       caches.open(V).then(c => c.put(e.request, copia));
       return r;
-    }).catch(() => caches.match(e.request))
+    }).catch(() => caches.match(e.request).then(r => r || Response.error()))
   );
 });

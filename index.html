@@ -9,7 +9,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Viva+">
 <link rel="apple-touch-icon" href="icon-192.png">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  // Mostra na tela qualquer erro do app (em vez de deixar a tela branca)
+  window.addEventListener("error", function (e) {
+    var c = document.getElementById("carregando");
+    if (c) { c.style.display = "block"; c.style.color = "#ff4b4b"; c.textContent = "Erro no app: " + e.message + " (linha " + e.lineno + "). Tire um print desta tela para pedir ajuda."; }
+  });
+  // Quando o gráfico terminar de carregar, redesenha a tela atual
+  window.chartPronto = function () { if (window.rerender) window.rerender(); };
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" onload="chartPronto()"></script>
 <style>
   :root { --verde:#58cc02; --verde2:#58a700; --azul:#1cb0f6; --azul2:#1899d6; --laranja:#ff9600; --verm:#ff4b4b; --cinza:#e5e5e5; --texto:#3c3c3c; --suave:#777; }
   * { box-sizing:border-box; }
@@ -60,6 +69,7 @@
 </head>
 <body>
 <div class="app">
+  <div id="carregando" class="card center">Carregando o Viva+… Se esta mensagem não sumir, atualize a página.<noscript><br>Ative o JavaScript do navegador para usar o Viva+.</noscript></div>
 
   <!-- 1) PERGUNTAS (primeiro acesso ou nova avaliação) -->
   <div id="vQuiz" class="view">
@@ -223,7 +233,7 @@ function proximo() {
     if (i < 10 || i > 100 || p < 25 || p > 250 || a < 120 || a > 230) { $("msg").textContent = "Confira idade, peso e altura: algum valor está fora do esperado."; return; }
   }
   if (passo < ps.length - 1) { passo++; mostrarPasso(); return; }
-  const r = calc();
+  const r = window.__r = calc();
   salvar(r);
   mostrar("vResultado");
   renderResultado(r);
@@ -470,7 +480,11 @@ function renderHome() {
       (melhor ? `<p>🏅 Maior evolução: <b>${melhor.x}</b> (+${melhor.v})</p>` : "") + (pior ? `<p>⚠️ Mais caiu: <b>${pior.x}</b> (${pior.v})</p>` : "");
   } else $("deltas").innerHTML = `<b>Sua base</b><p>${nomes.map(x => `<span class="pill" style="background:${cor(ult.notas[x])}">${x} ${ult.notas[x]}</span>`).join(" ")}</p><small>Depois da próxima avaliação, aqui aparece o que subiu e o que caiu.</small>`;
 }
-function verDiagnostico() { preencher(); mostrar("vResultado"); renderResultado(calc()); }
+function verDiagnostico() { preencher(); mostrar("vResultado"); renderResultado(window.__r = calc()); }
+window.rerender = function () {
+  if ($("vResultado").classList.contains("on") && window.__r) renderResultado(window.__r);
+  else if ($("vHome").classList.contains("on")) renderHome();
+};
 function refazer() { preencher(); passo = 0; mostrar("vQuiz"); mostrarPasso(); }
 
 /* ---------- Apagar, backup e instalação ---------- */
@@ -505,6 +519,7 @@ function instalarApp() { if (adiado) { adiado.prompt(); adiado = null; $("btnIns
   montar();
   if (ler().hist.length) { mostrar("vHome"); renderHome(); }
   else { mostrar("vQuiz"); mostrarPasso(); }
+  $("carregando").style.display = "none";
 })();
 </script>
 </body>
