@@ -2,27 +2,510 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Viva+</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#58cc02">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Viva+">
+<link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  :root { --verde:#1f9d6b; --fundo:#f1faf5; --texto:#1c2b24; --card:#fff; }
+  :root { --verde:#58cc02; --verde2:#58a700; --azul:#1cb0f6; --azul2:#1899d6; --laranja:#ff9600; --verm:#ff4b4b; --cinza:#e5e5e5; --texto:#3c3c3c; --suave:#777; }
   * { box-sizing:border-box; }
-  body { margin:0; font-family:system-ui,Arial,sans-serif; background:var(--fundo); color:var(--texto); line-height:1.5; }
-  header { background:var(--verde); color:#fff; text-align:center; padding:28px 16px; }
-  header h1 { margin:0; font-size:2.4rem; }
-  header p { margin:6px 0 0; }
-  main { max-width:640px; margin:0 auto; padding:16px; }
-  .card { background:var(--card); border-radius:14px; padding:18px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
-  h2 { margin-top:0; }
-  .sec { color:var(--verde); margin:26px 0 0; font-size:1.1rem; border-bottom:2px solid #d5eee2; padding-bottom:4px; }
-  label { display:block; margin-top:12px; font-weight:600; }
-  label small { display:block; font-weight:400; }
-  input, select { width:100%; padding:10px; margin-top:4px; font-size:1rem; border:1px solid #b9d9c9; border-radius:8px; background:#fff; }
-  .row { display:flex; gap:10px; }
-  .row > label { flex:1; }
-  .erro { border-color:#d64545; background:#fff1f1; }
-  button { width:100%; margin-top:18px; padding:14px; font-size:1.1rem; font-weight:700; color:#fff; background:var(--verde); border:0; border-radius:10px; }
-  #msg { color:#d64545; font-weight:600; margin:10px 0 0; }
-  #resultado { display:none; }
-  .nota { text-align:center; font-size:2.6rem; font-weight:800; color:var(--verde); margin:0; }
+  body { margin:0; font-family:"Nunito","DIN Rounded",ui-rounded,system-ui,Arial,sans-serif; background:#fff; color:var(--texto); line-height:1.45; }
+  .app { max-width:560px; margin:0 auto; padding:14px 16px 60px; }
+  .view { display:none; } .view.on { display:block; }
+  .logo { color:var(--verde); font-size:2.2rem; font-weight:900; text-align:center; margin:6px 0 10px; }
+  .logo span { color:var(--laranja); }
+  h2 { margin:18px 0 6px; font-size:1.35rem; } .tit { margin-top:24px; }
+  .saud { text-align:center; font-weight:800; margin:0 0 12px; }
+  .suave, small { color:var(--suave); }
+  .card { border:2px solid var(--cinza); border-radius:16px; padding:16px; margin-top:14px; }
+  .center { text-align:center; }
+  label { display:block; margin-top:14px; font-weight:800; }
+  label small { display:block; font-weight:600; }
+  input, select { width:100%; padding:12px; margin-top:6px; font:inherit; font-weight:700; background:#f7f7f7; border:2px solid var(--cinza); border-radius:12px; }
+  input:focus, select:focus { outline:0; border-color:var(--azul); background:#fff; }
+  .erro { border-color:var(--verm) !important; background:#fff1f1 !important; }
+  #msg { color:var(--verm); font-weight:800; min-height:1.2em; margin:10px 0 0; }
+  .prog { height:14px; background:var(--cinza); border-radius:10px; overflow:hidden; margin:6px 0 10px; }
+  .prog i { display:block; height:100%; width:0; background:var(--verde); border-radius:10px; transition:width .3s; }
+  .btn { display:block; width:100%; padding:14px; margin-top:14px; font:inherit; font-weight:900; font-size:.95rem; letter-spacing:.6px; text-transform:uppercase; color:#fff; background:var(--verde); border:0; border-bottom:4px solid var(--verde2); border-radius:16px; cursor:pointer; }
+  .btn:active { transform:translateY(3px); border-bottom-width:1px; }
+  .btn.azul { background:var(--azul); border-bottom-color:var(--azul2); }
+  .btn.claro { color:var(--azul); background:#fff; border:2px solid var(--cinza); border-bottom-width:4px; }
+  .btn.perigo { color:var(--verm); background:#fff; border:2px solid var(--cinza); border-bottom-width:4px; }
+  .btn.peq { display:inline-block; width:auto; padding:9px 14px; margin-top:8px; font-size:.8rem; }
+  .stats { display:flex; gap:10px; }
+  .stat { flex:1; text-align:center; font-weight:900; font-size:1.1rem; padding:10px 4px; border:2px solid var(--cinza); border-radius:16px; }
+  .stat small { font-weight:700; }
+  .nota { font-size:3.2rem; font-weight:900; margin:4px 0 0; }
+  #veredito { font-weight:800; margin:4px 0 10px; }
+  .foco { border:2px solid #ffd9a0; border-left-width:7px; background:#fffaf1; border-radius:14px; padding:10px 14px; margin:12px 0; }
+  .foco h3 { margin:0 0 6px; } .foco p { margin:6px 0; }
+  .pill { color:#fff; font-size:.8rem; font-weight:800; padding:2px 10px; border-radius:20px; vertical-align:middle; }
+  .links a { display:inline-block; margin:2px 10px 2px 0; color:var(--azul2); font-weight:800; }
+  .ok { padding:10px 12px; margin:8px 0; background:#effce1; border:2px solid #cdf2a3; border-radius:12px; }
+  .alerta { border:2px solid var(--verm); background:#fff1f1; padding:12px 14px; border-radius:14px; margin-top:14px; }
+  .meta { background:#eaf8ff; border:2px solid #bde8fb; border-radius:14px; padding:10px 12px; margin:10px 0; }
+  .barra { height:10px; background:#cfeefc; border-radius:8px; margin:8px 0 4px; overflow:hidden; }
+  .barra span { display:block; height:100%; background:var(--azul); }
+  .chip { display:inline-block; padding:6px 12px; margin:3px; font-weight:800; font-size:.85rem; color:var(--suave); border:2px solid var(--cinza); border-radius:20px; cursor:pointer; }
+  .chip.on { color:var(--azul2); background:#ddf4ff; border-color:var(--azul); }
+  .sobe { color:var(--verde2); font-weight:800; } .desce { color:var(--verm); font-weight:800; }
+  .toast { position:fixed; left:50%; bottom:30px; transform:translateX(-50%); z-index:9; padding:12px 20px; font-weight:900; color:#fff; background:var(--verde); border-bottom:4px solid var(--verde2); border-radius:16px; }
+  .rodape { font-size:.8rem; color:var(--suave); margin-top:22px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- 1) PERGUNTAS (primeiro acesso ou nova avaliação) -->
+  <div id="vQuiz" class="view">
+    <h1 class="logo">Viva<span>+</span></h1>
+    <div class="prog"><i id="barra"></i></div>
+    <div id="passos"></div>
+    <p id="msg"></p>
+    <button class="btn" id="proximo" onclick="proximo()">Continuar</button>
+    <button class="btn claro" id="voltar" onclick="voltar()">Voltar</button>
+  </div>
+
+  <!-- 2) DIAGNÓSTICO -->
+  <div id="vResultado" class="view">
+    <h1 class="logo">Viva<span>+</span></h1>
+    <div id="alerta"></div>
+    <div class="card center">
+      <p id="saudacao" class="saud"></p>
+      <p class="nota" id="nota"></p>
+      <small>Índice geral de bem-estar (0 a 100)</small>
+      <p id="veredito"></p>
+      <canvas id="grafico" height="280"></canvas>
+      <p id="imc"></p>
+    </div>
+    <h2 class="tit">🎯 Seu foco agora</h2>
+    <div id="focos"></div>
+    <div id="outros"></div>
+    <h2 class="tit">✅ O que já está bom</h2>
+    <div id="bons"></div>
+    <button class="btn" onclick="irHome()">Ir para minha evolução</button>
+  </div>
+
+  <!-- 3) EVOLUÇÃO (quem já fez a avaliação) -->
+  <div id="vHome" class="view">
+    <h1 class="logo">Viva<span>+</span></h1>
+    <p id="hSaud" class="saud"></p>
+    <div class="stats" id="stats"></div>
+    <div class="card" id="proxima"></div>
+    <button class="btn" onclick="refazer()">Refazer avaliação</button>
+
+    <h2 class="tit">🎯 Metas da semana</h2>
+    <div id="metas"></div>
+
+    <h2 class="tit">📈 Sua evolução</h2>
+    <div class="card">
+      <div id="chips"></div>
+      <canvas id="gLinha" height="200"></canvas>
+      <p id="notaEvo" class="suave"></p>
+    </div>
+    <div class="card" id="cComp"><b>Primeira avaliação x última</b><canvas id="gComp" height="260"></canvas></div>
+    <div class="card" id="deltas"></div>
+
+    <button class="btn claro" onclick="verDiagnostico()">Ver meu último diagnóstico</button>
+
+    <div class="card">
+      <b>📱 Use como app</b>
+      <p class="suave">No Android, toque em Instalar. No iPhone, abra no Safari, toque em Compartilhar e depois em Adicionar à Tela de Início.</p>
+      <button class="btn azul peq" id="btnInstalar" style="display:none" onclick="instalarApp()">Instalar</button>
+    </div>
+    <div class="card">
+      <b>💾 Backup</b>
+      <p class="suave">Seus dados ficam só neste navegador. Para trocar de celular, copie o código e cole no outro aparelho.</p>
+      <button class="btn claro peq" onclick="copiarBackup()">Copiar código</button>
+      <button class="btn claro peq" onclick="restaurar()">Restaurar código</button>
+    </div>
+    <button class="btn perigo" onclick="apagar()">Apagar dados e recomeçar</button>
+  </div>
+
+  <p class="rodape">O Viva+ é educativo e não substitui avaliação de profissional de saúde. As metas seguem referências gerais (como as da OMS) e podem não servir a quem tem alguma condição de saúde: nesses casos, siga a orientação do seu médico. Nenhum dado é enviado a servidores: seu histórico e suas metas ficam salvos só neste navegador. Os links abrem buscas em bases científicas (PubMed e SciELO) e páginas da OMS.</p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const n = id => parseFloat($(id).value.replace(",", "."));
+const lim = v => Math.max(0, Math.min(100, Math.round(v)));
+const pm = q => "https://pubmed.ncbi.nlm.nih.gov/?term=" + encodeURIComponent(q) + "&filter=pubt.systematicreview";
+const sc = q => "https://search.scielo.org/?q=" + encodeURIComponent(q) + "&lang=pt";
+const OMS = {
+  ativ: "https://www.who.int/news-room/fact-sheets/detail/physical-activity",
+  dieta: "https://www.who.int/news-room/fact-sheets/detail/healthy-diet",
+  mente: "https://www.who.int/news-room/fact-sheets/detail/mental-health-strengthening-our-response",
+  fumo: "https://www.who.int/news-room/fact-sheets/detail/tobacco",
+  alcool: "https://www.who.int/news-room/fact-sheets/detail/alcohol"
+};
+const OBJ = { sono: ["Sono"], energia: ["Sono", "Atividade", "Alimentação"], estresse: ["Mente", "Sono"], cond: ["Atividade", "Hidratação"], comer: ["Alimentação", "Hidratação"] };
+const cor = v => v >= 80 ? "#58cc02" : v >= 50 ? "#ff9600" : "#ff4b4b";
+const veredito = g => g < 40 ? "Seu bem-estar precisa de atenção. A boa notícia: há muito espaço para melhorar."
+  : g < 60 ? "Há bastante a melhorar. Comece pelas metas abaixo."
+  : g < 80 ? "Você está no caminho, mas ainda há pontos importantes a ajustar."
+  : "Muito bom! Mantenha os hábitos e refine os detalhes.";
+
+/* ---------- Perguntas ---------- */
+const AH = [["0", "Nenhuma vez"], ["1", "Alguns dias"], ["2", "Mais da metade dos dias"], ["3", "Quase todos os dias"]];
+// campo: [id, tipo, rótulo, dica, a, b, c]  (num: a=min b=max c=passo | sel: a=opções)
+const CFG = [
+  ["👤 Sobre você", [
+    ["nome", "text", "Seu nome (opcional)"],
+    ["idade", "num", "Idade (anos)", "", 10, 100, 1],
+    ["peso", "num", "Peso (kg)", "", 25, 250, 0.1],
+    ["altura", "num", "Altura (cm)", "", 120, 230, 1],
+    ["objetivo", "sel", "Seu principal objetivo agora", "", [["sono", "Dormir melhor"], ["energia", "Ter mais energia"], ["estresse", "Reduzir o estresse"], ["cond", "Melhorar o condicionamento"], ["comer", "Comer melhor"]]]]],
+  ["😴 Sono", [
+    ["sono", "num", "Horas de sono por noite (média)", "", 0, 16, 0.5],
+    ["latencia", "num", "Minutos que leva para pegar no sono", "", 0, 240, 5],
+    ["descansado", "sel", "Acorda se sentindo descansado(a)?", "", [["sempre", "Quase sempre"], ["as", "Às vezes"], ["rar", "Raramente ou nunca"]]],
+    ["telaCama", "sel", "Usa celular ou TV na cama antes de dormir?", "", [["nao", "Não"], ["sim", "Sim"]]]]],
+  ["🏃 Movimento", [
+    ["dias", "num", "Dias por semana com exercício", "(que acelere o coração)", 0, 7, 1],
+    ["min", "num", "Minutos por dia nesses dias", "", 0, 600, 5]]],
+  ["🥗 Alimentação e água", [
+    ["copos", "num", "Copos de água por dia", "(copo de 250 ml)", 0, 30, 1],
+    ["frutas", "num", "Porções de frutas e verduras por dia", "(1 porção = 1 fruta média ou um prato de sobremesa de legumes ou verduras)", 0, 15, 1],
+    ["ultra", "num", "Vezes por semana que consome refrigerante, salgadinho, fast-food ou bolacha recheada", "", 0, 50, 1]]],
+  ["📱 Telas", [
+    ["telas", "num", "Horas por dia em telas só de lazer", "(redes sociais, vídeos, jogos)", 0, 24, 0.5]]],
+  ["🧠 Mente", [
+    ["estresse", "sel", "Seu nível de estresse na maior parte dos dias", "", [["1", "1 - Muito tranquilo"], ["2", "2 - Tranquilo"], ["3", "3 - Médio"], ["4", "4 - Alto"], ["5", "5 - Muito alto"]]],
+    ["humor", "sel", "Nas últimas 2 semanas, com que frequência sentiu pouco interesse em fazer as coisas ou se sentiu para baixo?", "", AH],
+    ["ansia", "sel", "Nas últimas 2 semanas, com que frequência se sentiu nervoso(a), ansioso(a) ou preocupado(a) sem conseguir controlar?", "", AH]]],
+  ["🚭 Substâncias", [
+    ["fumo", "sel", "Cigarro, vape ou narguilé", "", [["nunca", "Nunca uso"], ["oc", "Uso de vez em quando"], ["dia", "Uso todos os dias"]]],
+    ["alcool", "sel", "Bebida alcoólica", "", [["nunca", "Nunca bebo"], ["oc", "Menos de 1 vez por semana"], ["freq", "1 vez por semana ou mais"]]]]]
+];
+const CAMPOS = CFG.flatMap(p => p[1].map(c => c[0]));
+let passo = 0;
+
+function montar() {
+  $("passos").innerHTML = CFG.map(([t, cs]) => `<section class="passo"><h2>${t}</h2>` + cs.map(([id, tp, rot, dica, a, b, c]) => {
+    const rq = id === "nome" ? "" : "req";
+    const campo = tp === "sel"
+      ? `<select id="${id}" class="${rq}"><option value="">Selecione</option>${a.map(o => `<option value="${o[0]}">${o[1]}</option>`).join("")}</select>`
+      : tp === "text" ? `<input id="${id}" type="text">`
+      : `<input id="${id}" class="${rq}" type="number" inputmode="decimal" min="${a}" max="${b}" step="${c}">`;
+    return `<label>${rot}${dica ? `<small>${dica}</small>` : ""}${campo}</label>`;
+  }).join("") + `</section>`).join("");
+}
+function mostrarPasso() {
+  const ps = document.querySelectorAll(".passo");
+  ps.forEach((p, i) => p.style.display = i === passo ? "block" : "none");
+  $("barra").style.width = Math.round(passo / ps.length * 100) + "%";
+  $("proximo").textContent = passo === ps.length - 1 ? "Ver meu diagnóstico" : "Continuar";
+  const volta = passo > 0 || ler().hist.length > 0;
+  $("voltar").style.display = volta ? "block" : "none";
+  $("voltar").textContent = passo > 0 ? "Voltar" : "Cancelar";
+  $("msg").textContent = "";
+  window.scrollTo(0, 0);
+}
+function voltar() {
+  if (passo > 0) { passo--; mostrarPasso(); } else { mostrar("vHome"); renderHome(); }
+}
+function proximo() {
+  const ps = document.querySelectorAll(".passo");
+  let vazio = null;
+  ps[passo].querySelectorAll(".req").forEach(el => {
+    const falta = el.value.trim() === "";
+    el.classList.toggle("erro", falta);
+    if (falta && !vazio) vazio = el;
+  });
+  if (vazio) { $("msg").textContent = "Preencha os campos em vermelho."; vazio.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+  if (passo === 0) {
+    const i = n("idade"), p = n("peso"), a = n("altura");
+    if (i < 10 || i > 100 || p < 25 || p > 250 || a < 120 || a > 230) { $("msg").textContent = "Confira idade, peso e altura: algum valor está fora do esperado."; return; }
+  }
+  if (passo < ps.length - 1) { passo++; mostrarPasso(); return; }
+  const r = calc();
+  salvar(r);
+  mostrar("vResultado");
+  renderResultado(r);
+}
+
+/* ---------- Dados no navegador ---------- */
+const CH = "viva_dados";
+function ler() {
+  try { const d = JSON.parse(localStorage.getItem(CH)); if (d && Array.isArray(d.hist)) { d.xp = d.xp || 0; d.atividade = d.atividade || []; return d; } } catch (e) {}
+  return { hist: [], metas: null, xp: 0, atividade: [] };
+}
+function gravar(d) { try { localStorage.setItem(CH, JSON.stringify(d)); } catch (e) {} }
+function isoDia(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function hoje() { return isoDia(new Date()); }
+function difDias(a, b) { return Math.round((new Date(b) - new Date(a)) / 864e5); }
+function fmt(s) { return s.split("-").reverse().join("/"); }
+function streak(d) {
+  const s = new Set(d.atividade), dt = new Date();
+  if (!s.has(isoDia(dt))) dt.setDate(dt.getDate() - 1);
+  let c = 0;
+  while (s.has(isoDia(dt))) { c++; dt.setDate(dt.getDate() - 1); }
+  return c;
+}
+function salvar(r) {
+  const d = ler(), t = hoje(), novo = !d.hist.some(x => x.data === t);
+  d.hist = d.hist.filter(x => x.data !== t);
+  d.hist.push({ data: t, geral: r.geral, notas: Object.fromEntries(r.I.map(i => [i.nome, i.nota])), resp: Object.fromEntries(CAMPOS.map(c => [c, $(c).value])) });
+  d.hist = d.hist.slice(-52);
+  if (novo) d.xp += 50;
+  gravar(d);
+}
+function preencher() {
+  const d = ler();
+  if (!d.hist.length) return;
+  const r = d.hist[d.hist.length - 1].resp || {};
+  for (const c in r) if ($(c)) $(c).value = r[c];
+}
+function mostrar(v) {
+  document.querySelectorAll(".view").forEach(e => e.classList.toggle("on", e.id === v));
+  window.scrollTo(0, 0);
+}
+let graf = {};
+function desenhar(k, id, cfg) {
+  if (graf[k]) graf[k].destroy();
+  if (typeof Chart === "undefined") return;
+  graf[k] = new Chart($(id), cfg);
+}
+function toast(t) {
+  const e = document.createElement("div");
+  e.className = "toast"; e.textContent = t;
+  document.body.appendChild(e);
+  setTimeout(() => e.remove(), 1600);
+}
+
+/* ---------- Cálculo do diagnóstico ---------- */
+function calc() {
+  const idade = n("idade"), peso = n("peso"), alt = n("altura") / 100;
+  const g = idade < 18 ? "jovem" : idade >= 65 ? "idoso" : "adulto", jovem = g === "jovem";
+  const I = [];
+
+  const [lo, hi] = jovem ? [8, 10] : g === "adulto" ? [7, 9] : [7, 8];
+  const h = n("sono"), lat = n("latencia"), desc = $("descansado").value;
+  let ns = 100 - (h < lo ? lo - h : h > hi ? h - hi : 0) * 25;
+  if (desc === "as") ns -= 10; if (desc === "rar") ns -= 25; if (lat > 30) ns -= 10;
+  const as = [];
+  if (h < lo) as.push(`Você dorme ${h} h por noite e a meta para a sua faixa é ${lo}–${hi} h. Deite ${Math.round((lo - h) * 60)} min mais cedo e mantenha o mesmo horário de acordar, inclusive no fim de semana.`);
+  else if (h > hi) as.push(`Você dorme ${h} h, acima da faixa de ${lo}–${hi} h. Se mesmo assim acorda cansado(a), converse com um profissional de saúde.`);
+  if (desc !== "sempre") as.push("Você nem sempre acorda descansado(a): mantenha o quarto escuro e fresco e evite cafeína depois das 15h.");
+  if (lat > 30) as.push(`Você leva ${lat} min para pegar no sono: evite telas e refeições pesadas na última hora antes de deitar.`);
+  if ($("telaCama").value === "sim") as.push("Deixe o celular carregando longe da cama.");
+  I.push({ nome: "Sono", nota: lim(ns), acoes: as, bom: `Sono dentro da meta (${lo}–${hi} h). Mantenha horários regulares.`,
+    links: [["Revisões sistemáticas (PubMed)", pm(jovem ? "sleep duration adolescents health outcomes" : "sleep duration adults health outcomes")], ["Estudos em português (SciELO)", sc(jovem ? "sono adolescentes" : "sono saúde adultos")]] });
+
+  const minSem = n("dias") * n("min"), meta = jovem ? 420 : 150, falta = Math.max(0, meta - minSem);
+  const aa = [];
+  if (jovem) {
+    aa.push(`Você faz ${minSem} min de exercício por semana; a meta é 60 min por dia (${meta} min/semana). Faltam ${falta} min: some ${Math.ceil(falta / 7)} min por dia com caminhada rápida, bicicleta ou esporte.`);
+    aa.push("Inclua atividades de impacto ou força (saltos, corrida, flexões) em pelo menos 3 dias por semana.");
+  } else {
+    aa.push(`Você faz ${minSem} min por semana; a meta mínima é ${meta} min (ideal até 300). Faltam ${falta} min: faça ${Math.ceil(falta / 5)} min extras em 5 dias.`);
+    aa.push(g === "idoso" ? "Inclua exercícios de força e de equilíbrio em pelo menos 2 a 3 dias por semana." : "Inclua exercícios de força em pelo menos 2 dias por semana.");
+  }
+  I.push({ nome: "Atividade", nota: lim(minSem / meta * 100), acoes: aa, bom: `Você cumpre a meta de movimento (${minSem} min por semana).`,
+    links: [["Revisões sistemáticas (PubMed)", pm(jovem ? "physical activity adolescents health" : "physical activity adults mortality")], ["Estudos em português (SciELO)", sc(jovem ? "atividade física adolescentes" : "atividade física saúde")], ["OMS", OMS.ativ]] });
+
+  const copos = n("copos"), metaCopos = Math.ceil(Math.min(3500, Math.max(1500, peso * 35)) / 250);
+  I.push({ nome: "Hidratação", nota: lim(copos / metaCopos * 100),
+    acoes: [`Referência aproximada para o seu peso: ${metaCopos} copos de 250 ml por dia (cerca de ${(metaCopos * 0.25).toFixed(1)} L). Você bebe ${copos}. Beba 1 copo ao acordar, 1 em cada refeição e leve uma garrafa. Urina bem clara indica boa hidratação. Se você tem doença renal ou cardíaca, siga a orientação do seu médico.`],
+    bom: `Hidratação adequada (${copos} copos por dia).`,
+    links: [["Revisões sistemáticas (PubMed)", pm("water intake hydration health")], ["Estudos em português (SciELO)", sc("ingestão de água hidratação")]] });
+
+  const fr = n("frutas"), ul = n("ultra"), af = [];
+  if (fr < 5) af.push(`Você come ${fr} porções de frutas e verduras por dia; a meta é 5. Acrescente ${Math.ceil(5 - fr)}: uma fruta no lanche e verduras no almoço e no jantar.`);
+  if (ul > 2) af.push(`Você consome refrigerante, salgadinho ou fast-food ${ul}x por semana; reduza para no máximo 2. Comece trocando o refrigerante por água.`);
+  I.push({ nome: "Alimentação", nota: lim(0.6 * Math.min(100, fr / 5 * 100) + 0.4 * Math.max(0, 100 - Math.max(0, ul - 2) * 20)), acoes: af,
+    bom: "Boa alimentação: muitas frutas e verduras e poucos ultraprocessados.",
+    links: [["Revisões sistemáticas (PubMed)", pm("ultra-processed food intake health outcomes")], ["Estudos em português (SciELO)", sc("alimentos ultraprocessados saúde")], ["OMS", OMS.dieta]] });
+
+  const t = n("telas"), lt = jovem ? 2 : 4;
+  I.push({ nome: "Telas", nota: lim(100 - Math.max(0, t - lt) * 20),
+    acoes: [`Você passa ${t} h por dia em telas de lazer; a referência é até ${lt} h. Corte ${(t - lt).toFixed(1)} h: ative o limite de tempo do celular, desligue notificações e faça uma pausa de 5 min a cada hora.`],
+    bom: `Tempo de tela equilibrado (${t} h por dia).`,
+    links: [["Revisões sistemáticas (PubMed)", pm(jovem ? "screen time adolescents mental health" : "screen time adults health")], ["Estudos em português (SciELO)", sc(jovem ? "tempo de tela adolescentes" : "tempo de tela adultos")]] });
+
+  const e = n("estresse"), hum = n("humor"), ans = n("ansia"), am = [];
+  if (e >= 4) am.push("Estresse alto: faça respiração lenta por 5 min, 2 vezes ao dia (inspire por 4 segundos, expire por 6), reserve um horário fixo de pausa e converse com alguém de confiança.");
+  else if (e === 3) am.push("Estresse médio: inclua 10 min diários de algo que relaxe você (caminhada, música, respiração lenta).");
+  if (hum + ans >= 2) am.push("Você marcou sinais de tristeza ou ansiedade em vários dias. Manter rotina de sono e movimento ajuda, mas vale conversar com alguém de confiança ou com um profissional.");
+  I.push({ nome: "Mente", nota: lim(((5 - e) / 4 * 100 + (100 - (hum + ans) / 6 * 100)) / 2), acoes: am,
+    bom: "Estresse e humor sob controle. Continue cuidando da mente.",
+    links: [["Revisões sistemáticas (PubMed)", pm(jovem ? "stress anxiety adolescents intervention" : "slow breathing stress anxiety")], ["Estudos em português (SciELO)", sc(jovem ? "estresse ansiedade adolescentes" : "estresse ansiedade intervenção")], ["OMS", OMS.mente]] });
+
+  const f = { nunca: 100, oc: 40, dia: 0 }[$("fumo").value];
+  const a = { nunca: 100, oc: jovem ? 50 : 80, freq: jovem ? 10 : 30 }[$("alcool").value], asb = [];
+  if ($("fumo").value !== "nunca") asb.push("Cigarro, vape e narguilé prejudicam pulmões e coração mesmo em uso ocasional. Procure a UBS (posto de saúde): o SUS oferece tratamento gratuito para parar de fumar.");
+  if ($("alcool").value !== "nunca") asb.push(jovem ? "Abaixo de 18 anos o álcool não é recomendado e a venda para menores é proibida no Brasil." : "Reduza a frequência: a OMS informa que não existe nível de consumo de álcool totalmente sem risco.");
+  I.push({ nome: "Substâncias", nota: lim((f + a) / 2), acoes: asb, bom: "Sem uso de cigarro e álcool: ótimo para a sua saúde.",
+    links: [["Revisões sistemáticas (PubMed)", pm(jovem ? "vaping adolescents health effects" : "smoking alcohol health risks adults")], ["Estudos em português (SciELO)", sc(jovem ? "vape adolescentes saúde" : "tabagismo álcool saúde")], ["OMS: tabaco", OMS.fumo], ["OMS: álcool", OMS.alcool]] });
+
+  const MINI = {
+    "Sono": h < lo ? `Deitar ${Math.min(30, Math.round((lo - h) * 60))} min mais cedo, todos os dias` : "Evitar telas na última hora antes de dormir, todos os dias",
+    "Atividade": `Fazer ${Math.max(15, Math.min(30, Math.ceil(falta / 5)))} min de movimento por dia`,
+    "Hidratação": `Beber ${Math.min(metaCopos, Math.floor(copos) + 2)} copos de água por dia`,
+    "Alimentação": fr < 5 ? `Comer ${Math.min(5, Math.floor(fr) + 1)} porções de frutas e verduras por dia` : "Ficar sem refrigerante, salgadinho e fast-food",
+    "Telas": `Ficar abaixo de ${Math.max(lt, Math.floor(t) - 1)} h de tela de lazer por dia`,
+    "Mente": "Fazer 5 min de respiração lenta (inspire 4 s, expire 6 s) por dia",
+    "Substâncias": $("fumo").value !== "nunca" ? "Usar menos cigarro, vape ou narguilé do que no dia anterior" : "Ficar sem álcool"
+  };
+  I.forEach(i => i.mini = MINI[i.nome]);
+
+  const geral = Math.round(I.reduce((s, i) => s + i.nota, 0) / I.length);
+  let imc = "";
+  if (g === "adulto") {
+    const v = peso / (alt * alt), fx = v < 18.5 ? "abaixo do peso" : v < 25 ? "faixa adequada" : v < 30 ? "sobrepeso" : "obesidade";
+    imc = `<small>IMC: <b>${v.toFixed(1)}</b> (${fx}). É só uma triagem: não considera massa muscular nem onde a gordura se concentra.</small>`;
+  } else if (jovem) imc = "<small>Abaixo de 18 anos, o IMC só pode ser interpretado com curvas por idade e sexo: peça essa avaliação na unidade de saúde.</small>";
+
+  const bonus = OBJ[$("objetivo").value];
+  const ordem = [...I].sort((x, y) => (x.nota - (bonus.includes(x.nome) ? 15 : 0)) - (y.nota - (bonus.includes(y.nome) ? 15 : 0)));
+  const abaixo = ordem.filter(i => i.nota < 80);
+  return { I, geral, imc, focos: abaixo.slice(0, 3), outros: abaixo.slice(3), bons: I.filter(i => i.nota >= 80), alerta: hum + ans >= 3 || e === 5, nome: $("nome").value.trim() };
+}
+
+/* ---------- Tela de diagnóstico ---------- */
+const linksHtml = i => `<p class="links">📚 ${i.links.map(l => `<a href="${l[1]}" target="_blank" rel="noopener">${l[0]}</a>`).join("")}</p>`;
+function renderResultado(r) {
+  $("saudacao").textContent = (r.nome ? "Olá, " + r.nome + "! " : "Olá! ") + "Este é o seu retrato de bem-estar:";
+  $("nota").textContent = r.geral; $("nota").style.color = cor(r.geral);
+  $("veredito").textContent = veredito(r.geral);
+  $("imc").innerHTML = r.imc;
+  $("alerta").innerHTML = r.alerta ? `<div class="alerta"><b>Cuide de você.</b> Suas respostas indicam sofrimento emocional frequente. Isso não é um diagnóstico, mas merece conversa com um profissional de saúde ou com alguém de confiança. Se precisar de apoio agora, o CVV atende 24 horas pelo telefone <b>188</b> (gratuito) ou em <a href="https://cvv.org.br" target="_blank" rel="noopener">cvv.org.br</a>.</div>` : "";
+  window.__minis = r.focos.map(i => ({ nome: i.nome, texto: i.mini }));
+  $("focos").innerHTML = r.focos.length ? r.focos.map((i, k) =>
+    `<div class="foco"><h3>${k + 1}. ${i.nome} <span class="pill" style="background:${cor(i.nota)}">${i.nota}/100</span></h3>` +
+    (i.acoes.length ? i.acoes.map(x => `<p>${x}</p>`).join("") : `<p>Está um pouco abaixo da meta (${i.nota}/100). Pequenos ajustes já melhoram.</p>`) +
+    `<p><b>🎯 Mini-meta desta semana:</b> ${i.mini}</p><button class="btn azul peq" id="btnMeta${k}" onclick="aceitar(${k})"></button>` + linksHtml(i) + `</div>`
+  ).join("") : "<p>Parabéns! Nenhum indicador pede atenção especial agora. Mantenha a rotina.</p>";
+  $("outros").innerHTML = r.outros.length ? "<h2>Também precisam de atenção</h2>" + r.outros.map(i =>
+    `<div class="foco"><h3>${i.nome} <span class="pill" style="background:${cor(i.nota)}">${i.nota}/100</span></h3>` + (i.acoes[0] ? `<p>${i.acoes[0]}</p>` : "") + linksHtml(i) + `</div>`).join("") : "";
+  $("bons").innerHTML = r.bons.length ? r.bons.map(i => `<div class="ok">✅ <b>${i.nome}</b> (${i.nota}/100): ${i.bom}</div>`).join("")
+    : "<p>Nenhum indicador chegou à meta ainda, e tudo bem: comece pela mini-meta do primeiro item acima.</p>";
+  estadoBtns();
+  desenhar("res", "grafico", { type: "bar",
+    data: { labels: r.I.map(i => i.nome), datasets: [{ data: r.I.map(i => i.nota), backgroundColor: r.I.map(i => cor(i.nota)), borderRadius: 8 }] },
+    options: { indexAxis: "y", scales: { x: { min: 0, max: 100 } }, plugins: { legend: { display: false } } } });
+}
+function aceitar(k) {
+  const mi = window.__minis[k], d = ler();
+  if (!d.metas || difDias(d.metas.inicio, hoje()) > 6) d.metas = { inicio: hoje(), itens: [] };
+  const p = d.metas.itens.findIndex(x => x.nome === mi.nome);
+  if (p >= 0) d.metas.itens.splice(p, 1); else d.metas.itens.push({ nome: mi.nome, texto: mi.texto, feitos: [] });
+  gravar(d); estadoBtns();
+}
+function estadoBtns() {
+  const d = ler(), ativos = d.metas && difDias(d.metas.inicio, hoje()) <= 6 ? d.metas.itens.map(x => x.nome) : [];
+  (window.__minis || []).forEach((mi, k) => {
+    const b = $("btnMeta" + k);
+    if (b) b.textContent = ativos.includes(mi.nome) ? "✔ Meta adicionada (toque para remover)" : "Quero esta meta";
+  });
+}
+function irHome() { mostrar("vHome"); renderHome(); }
+
+/* ---------- Tela de evolução ---------- */
+let evoSel = "Geral";
+function renderStats(d) {
+  const xp = d.xp;
+  $("stats").innerHTML = `<div class="stat">🔥<br>${streak(d)} <small>dias</small></div><div class="stat">⭐<br>${xp} <small>XP</small></div><div class="stat">🏆<br>Nível ${Math.floor(xp / 100) + 1}</div>`;
+}
+function renderMetas(d) {
+  const m = d.metas;
+  let h = "";
+  if (m && m.itens.length) {
+    const dia = difDias(m.inicio, hoje()), fim = dia > 6;
+    h += `<p class="suave">${fim ? "Sua semana terminou." : "Dia " + (dia + 1) + " de 7"}</p>`;
+    m.itens.forEach((x, i) => {
+      const feito = x.feitos.includes(hoje());
+      h += `<div class="meta"><b>${x.nome}:</b> ${x.texto}<div class="barra"><span style="width:${Math.round(x.feitos.length / 7 * 100)}%"></span></div><small>${x.feitos.length} de 7 dias cumpridos</small>` +
+        (fim ? "" : `<br><button class="btn peq ${feito ? "claro" : ""}" onclick="marcar(${i})">${feito ? "✔ Feito hoje (toque para desfazer)" : "Marcar como feito hoje (+10 XP)"}</button>`) + `</div>`;
+    });
+    if (fim) h += "<p><b>Semana concluída!</b> Refaça a avaliação para ver o quanto evoluiu e escolher novas metas.</p>";
+  } else h = `<div class="card">Você ainda não tem metas ativas. Veja seu diagnóstico e escolha uma mini-meta.<button class="btn azul" onclick="verDiagnostico()">Escolher metas</button></div>`;
+  $("metas").innerHTML = h;
+}
+function marcar(i) {
+  const d = ler(), x = d.metas.itens[i], t = hoje(), p = x.feitos.indexOf(t);
+  if (p >= 0) {
+    x.feitos.splice(p, 1); d.xp = Math.max(0, d.xp - 10);
+    if (!d.metas.itens.some(y => y.feitos.includes(t))) d.atividade = d.atividade.filter(z => z !== t);
+  } else {
+    x.feitos.push(t); d.xp += 10;
+    if (!d.atividade.includes(t)) d.atividade.push(t);
+    toast("+10 XP 🎉");
+  }
+  gravar(d); renderStats(d); renderMetas(d);
+}
+function evo(nome) { evoSel = nome; renderEvo(); }
+function renderEvo() {
+  const H = ler().hist, ult = H[H.length - 1];
+  $("chips").innerHTML = ["Geral", ...Object.keys(ult.notas)].map(x => `<span class="chip ${x === evoSel ? "on" : ""}" onclick="evo('${x}')">${x}</span>`).join("");
+  const v = h => evoSel === "Geral" ? h.geral : (h.notas[evoSel] !== undefined ? h.notas[evoSel] : null);
+  desenhar("linha", "gLinha", { type: "line",
+    data: { labels: H.map(x => fmt(x.data).slice(0, 5)), datasets: [{ data: H.map(v), borderColor: "#58cc02", backgroundColor: "#58cc02", tension: 0.3, pointRadius: 5, spanGaps: true }] },
+    options: { scales: { y: { min: 0, max: 100 } }, plugins: { legend: { display: false } } } });
+  $("notaEvo").textContent = H.length > 1 ? `${evoSel}: de ${v(H[0])} para ${v(ult)} desde ${fmt(H[0].data)}.` : "Esta é sua base. A linha de evolução cresce a cada nova avaliação.";
+}
+function renderHome() {
+  const d = ler(), H = d.hist, ult = H[H.length - 1], prev = H.length > 1 ? H[H.length - 2] : null, nome = (ult.resp || {}).nome;
+  $("hSaud").textContent = (nome ? "Olá, " + nome + "! " : "Olá! ") + "Bom ver você de novo 💚";
+  renderStats(d); renderMetas(d);
+  const dias = difDias(ult.data, hoje());
+  $("proxima").innerHTML = dias >= 7 ? "<b>Hora do check-up semanal!</b> Refaça a avaliação para ver o quanto você evoluiu."
+    : `Última avaliação em ${fmt(ult.data)} (nota <b>${ult.geral}</b>). Próxima sugerida em <b>${7 - dias}</b> dia(s). Até lá, cumpra suas metas!`;
+  renderEvo();
+  const nomes = Object.keys(ult.notas);
+  $("cComp").style.display = H.length > 1 ? "block" : "none";
+  if (H.length > 1) desenhar("comp", "gComp", { type: "bar",
+    data: { labels: nomes, datasets: [{ label: "Primeira", data: nomes.map(x => H[0].notas[x] !== undefined ? H[0].notas[x] : null), backgroundColor: "#cfcfcf", borderRadius: 6 }, { label: "Última", data: nomes.map(x => ult.notas[x]), backgroundColor: "#58cc02", borderRadius: 6 }] },
+    options: { scales: { y: { min: 0, max: 100 } } } });
+  if (prev) {
+    const seta = v => v > 0 ? `<span class="sobe">▲ +${v}</span>` : v < 0 ? `<span class="desce">▼ ${v}</span>` : "<span class=\"suave\">= 0</span>";
+    const df = nomes.filter(x => prev.notas[x] !== undefined).map(x => ({ x, v: ult.notas[x] - prev.notas[x] }));
+    const melhor = df.reduce((a, b) => b.v > (a ? a.v : 0) ? b : a, null), pior = df.reduce((a, b) => b.v < (a ? a.v : 0) ? b : a, null);
+    $("deltas").innerHTML = `<b>Desde ${fmt(prev.data)}</b><p>Nota geral ${seta(ult.geral - prev.geral)}</p><p>${df.map(o => `${o.x} ${seta(o.v)}`).join(" · ")}</p>` +
+      (melhor ? `<p>🏅 Maior evolução: <b>${melhor.x}</b> (+${melhor.v})</p>` : "") + (pior ? `<p>⚠️ Mais caiu: <b>${pior.x}</b> (${pior.v})</p>` : "");
+  } else $("deltas").innerHTML = `<b>Sua base</b><p>${nomes.map(x => `<span class="pill" style="background:${cor(ult.notas[x])}">${x} ${ult.notas[x]}</span>`).join(" ")}</p><small>Depois da próxima avaliação, aqui aparece o que subiu e o que caiu.</small>`;
+}
+function verDiagnostico() { preencher(); mostrar("vResultado"); renderResultado(calc()); }
+function refazer() { preencher(); passo = 0; mostrar("vQuiz"); mostrarPasso(); }
+
+/* ---------- Apagar, backup e instalação ---------- */
+function apagar() {
+  if (confirm("Apagar todo o histórico, metas e pontos deste aparelho e recomeçar do zero?")) {
+    try { localStorage.removeItem(CH); } catch (e) {}
+    location.reload();
+  }
+}
+function copiarBackup() {
+  const cod = btoa(unescape(encodeURIComponent(JSON.stringify(ler()))));
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(cod).then(() => toast("Código copiado!"), () => prompt("Copie seu código:", cod));
+  else prompt("Copie seu código:", cod);
+}
+function restaurar() {
+  const cod = prompt("Cole aqui o código de backup:");
+  if (!cod) return;
+  try {
+    const d = JSON.parse(decodeURIComponent(escape(atob(cod.trim()))));
+    if (!Array.isArray(d.hist) || !d.hist.length) throw 0;
+    gravar(d); location.reload();
+  } catch (e) { alert("Código inválido. Confira se copiou o código inteiro."); }
+}
+let adiado;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); adiado = e; $("btnInstalar").style.display = "inline-block"; });
+function instalarApp() { if (adiado) { adiado.prompt(); adiado = null; $("btnInstalar").style.display = "none"; } }
+
+/* ---------- Início ---------- */
+(function () {
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  montar();
+  if (ler().hist.length) { mostrar("vHome"); renderHome(); }
+  else { mostrar("vQuiz"); mostrarPasso(); }
+})();
+</script>
+</body>
+</html>
